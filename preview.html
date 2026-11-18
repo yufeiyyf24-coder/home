@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>卷卷 · 手机预览</title>
+<style>
+* { box-sizing: border-box }
+body { margin: 0; background: #e9e6df; color: #39342c; font: 13px -apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif }
+main { min-height: 100dvh; display: grid; grid-template-columns: minmax(0,1fr); place-items: center; padding: 12px; overflow: hidden }
+.phone {
+  width: 412px;
+  height: 917px;
+  zoom: var(--scale, 1);
+  display: grid;
+  grid-template-rows: 28px minmax(0, 1fr) 24px;
+  border-radius: 26px;
+  overflow: hidden;
+  outline: 2px solid #504a42;
+  box-shadow: 0 8px 30px #42392c30;
+  background: #fcfaec;
+}
+iframe { display: block; width: 100%; height: 100%; border: 0; background: #fcfaec }
+.status { display: flex; align-items: center; padding: 0 18px; font-weight: 650 }
+.indicators { margin-left: auto; display: flex; align-items: center; gap: 7px }
+.signal { display: flex; align-items: end; gap: 2px }
+.signal i { display: block; width: 2px; background: currentColor; border-radius: 1px }
+.signal i:nth-child(1) { height: 4px }
+.signal i:nth-child(2) { height: 6px }
+.signal i:nth-child(3) { height: 8px }
+.signal i:nth-child(4) { height: 10px }
+.wifi { width: 13px; height: 10px; display: grid; justify-items: center }
+.wifi::before, .wifi::after { content: ""; border: 2px solid currentColor; border-color: currentColor transparent transparent; border-radius: 50%; width: 100%; height: 6px }
+.wifi::after { width: 7px; margin-top: -4px }
+.battery { position: relative; width: 23px; height: 11px; border: 1px solid currentColor; border-radius: 3px; padding: 1px }
+.battery::before { content: ""; display: block; width: 82%; height: 100%; border-radius: 1px; background: currentColor }
+.battery::after { content: ""; position: absolute; top: 3px; right: -3px; width: 2px; height: 4px; border-radius: 0 1px 1px 0; background: currentColor }
+.gestures { display: grid; place-items: center }
+.phone.drawer-open .status { background: #c3bfb3 }
+.phone.secondary-page .gestures { background: linear-gradient(180deg, rgba(255,253,239,0) 0%, rgba(255,253,239,.721154) 34.62%, #fffdef 100%) bottom / 100% 69px no-repeat }
+.phone.drawer-open .gestures { background: #fffdef }
+.gestures::before { content: ""; width: 108px; height: 4px; border-radius: 6px; background: #38342e }
+</style>
+<script>
+function fitPhone() {
+  const root = document.documentElement;
+  const scale = Math.min(1, (root.clientWidth - 24) / 412, (root.clientHeight - 24) / 917);
+  root.style.setProperty('--scale', scale);
+}
+fitPhone();
+window.addEventListener('resize', fitPhone);
+</script>
+</head>
+<body>
+<main>
+  <div class="phone" aria-label="412 × 917 手机预览">
+    <div class="status" aria-hidden="true">
+      <time id="status-time"></time>
+      <span class="indicators">
+        <span class="signal"><i></i><i></i><i></i><i></i></span>
+        <span class="wifi"></span><span class="battery"></span>
+      </span>
+    </div>
+    <iframe id="prototype" title="卷卷原型"></iframe>
+    <div class="gestures" aria-hidden="true"></div>
+  </div>
+</main>
+<script>
+const clock = document.querySelector('#status-time');
+const format = new Intl.DateTimeFormat('zh-CN', { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
+function updateTime() {
+  const now = new Date();
+  clock.dateTime = now.toISOString();
+  clock.textContent = format.format(now);
+}
+updateTime();
+setInterval(updateTime, 1000);
+
+const prototype = document.querySelector('#prototype');
+const phone = document.querySelector('.phone');
+function loadPrototype() {
+  phone.classList.remove('drawer-open','secondary-page');
+  prototype.src = 'index.html?phone=1' + location.hash;
+}
+window.addEventListener('message', event => {
+  if (event.source !== prototype.contentWindow) return;
+  if (location.protocol !== 'file:' && event.origin !== location.origin) return;
+  if (event.data?.type !== 'juanjuan:phone-chrome') return;
+  phone.classList.toggle('drawer-open', event.data.drawerOpen === true);
+  phone.classList.toggle('secondary-page', event.data.secondaryPage === true);
+});
+window.addEventListener('hashchange', loadPrototype);
+loadPrototype();
+</script>
+</body>
+</html>

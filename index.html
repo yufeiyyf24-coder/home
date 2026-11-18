@@ -1,0 +1,1312 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#fcfaec">
+<title>卷卷</title>
+<script>if (new URLSearchParams(location.search).has('phone')) document.documentElement.classList.add('phone-preview');</script>
+<style>
+@font-face {
+  font-family: "Joti One";
+  src: url("assets/joti-one-latin.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+:root {
+  color-scheme: light;
+  --paper: #fcfaec;
+  --surface: #fffdf6;
+  --ink: #403d36;
+  --brown: #75644d;
+  --muted: #726c61;
+  --line: #d9cdb7;
+  --wash: #f2e9d3;
+  --accent: #e9a45d;
+  --sand: #dcc49f;
+  --shadow: 1px 4px 8px #68573330;
+  --serif: "Songti SC","Noto Serif CJK SC","Microsoft YaHei",serif;
+  --chat-font: var(--serif);
+  --chat-size: 16px;
+  font-family: -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+}
+* { box-sizing: border-box }
+.phone-preview { scrollbar-width: none }
+body { margin: 0; background: var(--paper); color: var(--ink) }
+button,input,textarea,select { font: inherit; color: inherit }
+button { cursor: pointer; border: 0; background: none }
+button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 2px solid #8c642f; outline-offset: 3px }
+button:disabled { cursor: default; opacity: .55 }
+[hidden] { display: none !important }
+h1,h2,h3,p { margin-top: 0 }
+.icon { width: 21px; height: 21px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; vertical-align: middle }
+.icon-button { min-width: 42px; min-height: 42px; display: inline-grid; place-items: center; color: var(--brown); font-size: 23px; border-radius: 50% }
+.icon-button:hover, .text-button:hover { background: var(--wash) }
+.app { width: min(100%, 760px); margin: auto; min-height: 100dvh }
+.topbar { display: grid; grid-template-columns: 1fr minmax(0,3fr) 1fr; min-height: 68px; align-items: center; padding: 12px 12px 6px; color: var(--brown) }
+.topbar h1 { font-size: 20px; text-align: center; margin: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-weight: 500 }
+.topbar > :first-child { justify-self: start }
+.topbar > :last-child { justify-self: end }
+.chat { height: 100dvh; display: flex; flex-direction: column }
+.welcome { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 16px 18px 36px; text-align: center }
+.face { color: var(--accent); font-size: 36px; line-height: 1; font-weight: 650; letter-spacing: .07em; margin-bottom: 18px }
+.welcome p { font-size: 28px; color: #596071; letter-spacing: .12em; margin: 0 }
+.messages { flex: 1; overflow: auto; min-height: 0; padding: 8px clamp(20px,7vw,34px) 16px; overflow-wrap: anywhere }
+.message { margin-bottom: 24px }
+.message.user { display: grid; justify-items: end }
+.bubble { font-family: var(--chat-font); font-size: var(--chat-size); line-height: 1.72; white-space: pre-wrap; margin: 0; max-width: 100% }
+.user .bubble { max-width: 82%; background: var(--wash); border-radius: 17px; padding: 11px 16px }
+.message-tools { display: flex; align-items: center; gap: 3px; color: var(--muted); margin-top: 3px }
+.message-tools .icon-button { min-width: 32px; min-height: 34px; font-size: 19px }
+.message-tools .icon { width: 16px; height: 16px }
+.message-tools time { font-size: 11px; padding: 0 5px }
+.thinking { font-size: 12px; color: var(--muted); padding: 5px 0 }
+.composer-wrap { position: relative; padding: 8px 18px max(24px, env(safe-area-inset-bottom)); flex: none }
+.composer { border: 1px dashed var(--brown); border-radius: 25px 25px 6px 6px; background: var(--surface); padding: 12px 14px 10px; box-shadow: 0 12px 18px #68573316 }
+.composer textarea { display: block; width: 100%; resize: none; border: 0; background: transparent; min-height: 50px; max-height: 135px; padding: 4px; font-family: var(--serif); line-height: 1.5 }
+.composer textarea:focus { outline: none }
+.composer:focus-within { border-color: #96662f }
+.composer-bar { display: flex; align-items: center; gap: 8px }
+.composer-bar .icon-button { min-width: 37px; min-height: 36px }
+.model-label { background: var(--sand); color: #4b3927; font-size: 12px; padding: 6px 12px; border-radius: 20px }
+.send { margin-left: auto; background: var(--wash) }
+.scrim { position: fixed; inset: 0; background: #3a352f50; z-index: 5 }
+.sidebar { position: fixed; z-index: 6; inset: 0 auto 0 0; width: min(320px,85vw); border-radius: 0 26px 26px 0; display: flex; flex-direction: column; background: var(--paper); padding: max(24px,env(safe-area-inset-top)) 24px max(22px,env(safe-area-inset-bottom)); color: var(--brown) }
+.search { background: #e8e1d4; height: 38px; display: flex; align-items: center; gap: 10px; padding: 0 12px; border-radius: 25px }
+.search input { width: 100%; border: 0; background: transparent; font-family: var(--serif) }
+.history { overflow: auto; flex: 1 }
+.history-heading { display: flex; align-items: center; justify-content: space-between; min-height: 38px; color: var(--muted); font-size: 12px; padding: 10px 5px 0 }
+.history-item { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 10px; text-align: left; border-radius: 18px; padding: 10px 13px; font-family: var(--serif) }
+.history-item span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+.history-item small { white-space: nowrap; color: var(--muted); font: 11px sans-serif }
+.history-item:hover,.history-item.active { background: var(--wash) }
+.sidebar-footer { display: flex; align-items: center; gap: 10px; margin-top: 16px }
+.sidebar-footer .icon-button { background: var(--wash); min-width: 37px; min-height: 37px; position: relative }
+.sidebar-footer > :last-child { margin-left: auto }
+.unread-dot { position: absolute; right: 5px; top: 5px; width: 7px; height: 7px; border-radius: 50%; background: #bc7040 }
+.subpage {
+  --page-top: 12px;
+  --page-gutter: clamp(21px,10vw,42px);
+  max-width: 570px;
+  margin: auto;
+  padding: var(--page-top) var(--page-gutter) 100px;
+}
+.subpage::after {
+  content: "";
+  position: fixed;
+  z-index: 1;
+  left: 50%;
+  bottom: 0;
+  width: min(100%,570px);
+  height: 69px;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, rgba(255,253,239,0) 0%, rgba(255,253,239,.721154) 34.62%, #fffdef 100%) top / 100% 69px no-repeat;
+  pointer-events: none;
+}
+.phone-preview .subpage::after { height: 45px }
+.subpage-header.pinned {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  margin: calc(-1 * var(--page-top)) calc(-1 * var(--page-gutter)) 20px;
+  padding: var(--page-top) var(--page-gutter) 20px;
+  background: var(--paper);
+}
+.subpage-header.pinned::after {
+  content: "";
+  position: absolute;
+  inset: 100% 0 auto;
+  height: 18px;
+  background: linear-gradient(to bottom,var(--paper),transparent);
+  pointer-events: none;
+}
+.subpage-header.pinned .tabs { margin-bottom: 0 }
+.page-head { display: flex; align-items: center; gap: 9px; margin: 0 -22px 20px; color: var(--brown) }
+.page-head h1 { font-size: 24px; margin: 0; font-weight: 500 }
+.tabs { display: flex; border-radius: 24px; overflow: hidden; background: var(--wash); margin-bottom: 28px }
+.tabs button { flex: 1; min-height: 32px; padding: 3px 8px; color: var(--brown); font-family: var(--serif) }
+.tabs button[aria-pressed=true] { box-shadow: inset 0 -4px 7px #68573332 }
+.timeline { border-inline: 3px dashed var(--line); padding: 4px 25px; margin: 42px -13px 0 }
+.entry { position: relative; margin-bottom: 32px }
+.entry::before { content: ""; position: absolute; width: 20px; height: 20px; border-radius: 50%; background: #ffca97; top: 1px; left: -37px }
+.entry.me::before { left: auto; right: -37px }
+.entry-heading { width: 100%; text-align: left; color: var(--brown); font-weight: 650; padding: 3px 0 8px }
+.entry.me .entry-heading { text-align: right }
+.entry-card {
+  display: block;
+  position: relative;
+  width: 100%;
+  height: 100px;
+  padding: 0;
+  overflow: hidden;
+  border-radius: 5px;
+  background: rgba(255,255,255,.51);
+  box-shadow: 4px 4px 6px rgba(122,100,68,.2);
+  color: #222;
+  font-family: "PingFang SC","Microsoft YaHei",sans-serif;
+  text-align: center;
+  letter-spacing: .01em;
+}
+.entry-card .excerpt {
+  position: absolute;
+  inset: 7px 15px auto 11px;
+  display: -webkit-box;
+  height: 71px;
+  overflow: hidden;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  font-size: 14px;
+  line-height: 1.6;
+  mask-image: linear-gradient(#000 48%,transparent 100%);
+}
+.entry-card .more {
+  position: absolute;
+  inset: 72px 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  color: #e9a866;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.entry-card .more .icon { width: 16px; height: 16px }
+.entry time { display: block; text-align: right; color: var(--muted); font-size: 12px; margin-top: 10px }
+.entry.me time { text-align: left }
+.diary-actions { position: fixed; z-index: 2; bottom: max(24px,env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); width: min(calc(100% - 78px),485px); display: flex; align-items: center; gap: 40px }
+.phone-preview .diary-actions { bottom: 41px; left: calc(50% + 1px); width: calc(100% - 76px) }
+.diary-date-control {
+  display: flex;
+  align-items: stretch;
+  flex: 1;
+  min-width: 0;
+  height: 50px;
+  background: #fffdf5ef;
+  border: 1px solid var(--wash);
+  border-radius: 25px;
+}
+.diary-actions .calendar-launch { flex: 0 0 49px; padding: 0; color: var(--brown) }
+.diary-ruler-wrap { position: relative; flex: 1; min-width: 0; margin: 4px 10px 4px 8px }
+.diary-ruler {
+  height: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  overscroll-behavior-inline: contain;
+  user-select: none;
+  cursor: grab;
+  border-radius: 10px;
+}
+.diary-ruler:active { cursor: grabbing }
+.diary-ruler:focus-visible { outline: 2px solid #8c642f; outline-offset: -2px }
+.diary-ruler-track { position: relative; height: 100%; width: calc(100% + var(--ruler-span)) }
+.diary-ruler-tick {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  transform: translateX(-50%);
+  color: var(--muted);
+  white-space: nowrap;
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+.diary-ruler-tick::after { content: ""; width: 1px; height: 8px; background: var(--line) }
+.diary-ruler-tick.has-entry::after { height: 11px; background: #b99569 }
+.diary-ruler-tick.selected { color: #83562c; font-weight: 650 }
+.diary-ruler-tick.selected::after { height: 13px; width: 2px; border-radius: 2px; background: #bc8046 }
+.diary-actions .add-entry { position: relative; flex: 0 0 50px; width: 50px; height: 50px; background: rgba(255,179,102,.56) }
+.add-entry::before,.add-entry::after { content: ""; position: absolute; inset: 50% auto auto 50%; width: 15px; height: 3px; border-radius: 2px; background: white; transform: translate(-50%,-50%); pointer-events: none }
+.add-entry::after { transform: translate(-50%,-50%) rotate(90deg) }
+.month-title { display: flex; align-items: center; gap: 15px; color: var(--brown); justify-content: flex-end; margin: 28px 0 15px; font-size: 27px }
+.month-title::before { content: ""; border-top: 1px dashed var(--accent); flex: 1 }
+.single-list { display: grid; grid-template-columns: 1fr 1fr; gap: 20px 28px; border-right: 3px dashed var(--line); padding-right: 16px }
+.single-item { text-align: left; padding: 0; min-width: 0; font-size: 13px; color: var(--brown) }
+.single-card { display: block; position: relative; min-height: 140px; padding: 12px 9px 36px; border: 1px solid #fac391; border-radius: 6px; background: var(--surface); box-shadow: var(--shadow); margin-bottom: 9px; overflow-wrap: anywhere }
+.single-card b { position: absolute; right: 10px; bottom: 8px; font-size: 18px; color: #a16b32 }
+.paper-card { display: block; width: 100%; text-align: left; background: var(--surface); border: 1px solid #eee6d2; box-shadow: var(--shadow); margin: 8px 0 18px; padding: 16px; white-space: pre-wrap; overflow-wrap: anywhere; border-radius: 8px }
+.favorite-card { border: 1px dashed var(--line); min-height: 100px; border-radius: 2px; margin-bottom: 28px }
+.caption,.empty { color: var(--muted); font-size: 13px }
+.caption.right { display: block; text-align: right }
+.text-button { color: var(--brown); padding: 8px 10px; border-radius: 10px }
+.primary { color: #4b3927; background: var(--sand); padding: 9px 15px; border-radius: 15px }
+.panel-heading { display: flex; justify-content: space-between; align-items: center; gap: 8px; color: var(--brown); margin: 21px 0 13px }
+.panel-heading h2,.panel-heading h3 { font-size: 17px; margin: 0; font-weight: 500 }
+.stack { border-radius: 20px; background: var(--surface); overflow: hidden; padding: 0 10px }
+.setting-row { display: flex; align-items: center; gap: 10px; min-height: 50px; padding: 5px 8px; color: var(--brown) }
+.setting-row + .setting-row { border-top: 1px dashed var(--line) }
+.setting-row > :last-child { margin-left: auto }
+.toggle { appearance: none; width: 44px; height: 24px; border-radius: 15px; background: #d0ccc4; position: relative; flex: none; cursor: pointer }
+.toggle::after { content: ""; position: absolute; width: 18px; height: 18px; top: 3px; left: 3px; border-radius: 50%; background: white }
+.toggle:checked { background: #b38a53 }
+.toggle:checked::after { left: 23px }
+.field { display: block; width: 100%; padding: 10px 12px; margin: 6px 0 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 13px }
+textarea.field { min-height: 120px; resize: vertical }
+.rule-paper { margin: 0 10px 18px }
+.rule-paper span { display: block; height: var(--line-height); border-bottom: 1px dashed var(--line) }
+.meals { margin-top: 16px; display: grid; grid-template-columns: repeat(3,1fr); background: var(--surface); border-radius: 7px; overflow: hidden }
+.meal { min-width: 0; text-align: center; border-right: 1px solid var(--line) }
+.meal strong { display: block; background: var(--sand); font-weight: 500; color: #4b3927; padding: 8px }
+.meal-body { min-height: 137px }
+.exercise { margin-top: 16px; min-height: 364px; border-radius: 18px; background: var(--surface) }
+.swatches { display: flex; gap: 22px; padding: 12px 16px 20px }
+.swatch { width: 38px; height: 38px; border-radius: 50%; background: var(--swatch); border: 1px solid #9f927e }
+.swatch[aria-pressed=true] { outline: 2px solid #8c7660; outline-offset: 2px }
+.font-options { margin: 8px 5px; display: flex; border: 1px solid var(--brown); border-radius: 20px; overflow: hidden }
+.font-options button { flex: 1; padding: 7px 0 }
+.font-options button[aria-pressed=true] { background: var(--wash) }
+.slider-row { display: flex; gap: 10px; align-items: center; margin: 14px 7px }
+input[type=range] { accent-color: #9d6f39; flex: 1; min-width: 0 }
+.font-sample { margin: 12px; color: var(--brown); font: var(--chat-size) var(--chat-font) }
+dialog { border: 0; background: var(--paper); color: var(--ink); border-radius: 20px; max-height: 85dvh; width: min(390px,calc(100% - 32px)); padding: 20px; box-shadow: var(--shadow) }
+dialog::backdrop { background: #3a352f54 }
+.dialog-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 13px }
+.dialog-head h2 { margin: 0; color: var(--brown); font-size: 20px; font-weight: 500 }
+.dialog-actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 6px }
+.reading { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.8 }
+.menu { position: fixed; z-index: 8; width: 160px; border-radius: 18px; background: var(--paper); box-shadow: 0 2px 10px #68573346; padding: 8px 14px }
+.menu button { display: block; width: 100%; text-align: left; padding: 9px 4px; color: var(--brown) }
+.menu button + button { border-top: 1px dashed var(--line) }
+.model-sheet {
+  inset: auto 0 0;
+  margin: 0 auto;
+  width: min(412px,100%);
+  max-width: 100%;
+  height: min(397px,100dvh);
+  max-height: none;
+  padding: 24px 0 0;
+  border-radius: 25px 25px 0 0;
+  background: #fffdef;
+  color: #736249;
+}
+.phone-preview .model-sheet { height: min(373px,100dvh) }
+.model-sheet::backdrop { background: #3c352f4d }
+.model-heading h2 { text-align: center; font-size: 18px; font-weight: 400; line-height: 25px; margin: 0 }
+.model-close { position: absolute; top: 15px; left: 11px; width: 44px; height: 44px }
+.model-close .icon { width: 24px; height: 24px }
+.model-content { width: min(345px,calc(100% - 32px)); margin: 0 auto }
+.model-options { position: relative; width: min(312px,100%); display: grid; gap: 46px; margin: 41px auto 27px }
+.model-options::after { content: ""; position: absolute; inset: 59px 0 auto; border-top: 1px dashed #958f85; pointer-events: none }
+.model-option { display: flex; align-items: center; gap: clamp(12px,6.5vw,27px); min-height: 36px; padding: 0 clamp(8px,6vw,25px); text-align: left; color: inherit; font-size: 16px }
+.model-option::before { content: ""; flex: none; width: 36px; height: 36px; border-radius: 50%; background: #d7d7d7 }
+.model-option[aria-pressed=true]::before { box-shadow: inset 0 0 0 2px #a68f6c }
+.model-settings { min-height: 115px; padding: 10px 25px 12px; border-radius: 16px; background: #fff }
+.model-settings .setting-row { min-height: 45px; padding-inline: 0 }
+.efforts { display: grid; grid-template-columns: repeat(3,1fr); position: relative }
+.efforts::before { content: ""; position: absolute; inset: 10px 19px auto; border-top: 3px dashed #dcc49f }
+.efforts button { position: relative; justify-self: center; min-width: 38px; color: #736249; font-size: 12px; padding: 3px 0 }
+.efforts button[data-effort=medium] { min-width: 55px; color: #9a8970; font: 14px/19px "Noto Sans Bengali UI",system-ui,sans-serif }
+.efforts button:first-child { justify-self: start }
+.efforts button:last-child { justify-self: end }
+.efforts button::before { content: ""; display: block; width: 11px; height: 11px; margin: 3px auto 6px; border-radius: 50%; background: #d9d0c2 }
+.efforts button[aria-pressed=true]::before { background: #b48f60; outline: 2px solid #ecdfcb }
+.calendar {
+  --handwriting: "HanziPen SC","KaiTi","STKaiti",cursive;
+  --calendar-white: #fffdef;
+  --calendar-blue: #bce0ea;
+  --calendar-green: #dcdfa2;
+  width: min(341px, calc(100% - 32px));
+  height: 447px;
+  max-height: calc(100dvh - 24px);
+  transform: translate(.5px, clamp(0px, calc((100dvh - 471px) / 2), 39px));
+  background: #dcb28a;
+  color: #736249;
+  padding: 0 24px 16px;
+  border: 0;
+  border-radius: 5px;
+  box-shadow: inset 0 0 0 .5px #736249, 0 4px 9px 5px #7a644433;
+}
+.calendar::backdrop { background: #fbf7e327; backdrop-filter: blur(5px) }
+.calendar .dialog-head {
+  position: relative;
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-start;
+  height: 82px;
+  border-bottom: 1px dashed var(--calendar-white);
+  margin: 0 1.5px;
+}
+.calendar .dialog-head h2 {
+  position: absolute;
+  left: 9.5px;
+  top: 5px;
+  margin: 0;
+  color: var(--calendar-white);
+}
+.calendar-month-number { font: 48px/64px "Joti One",Georgia,serif }
+.calendar-month-unit { font: 18px/1 var(--handwriting); margin-left: 3px }
+.calendar-month-name { position: absolute; left: 0; top: 49px; color: #736249; font: 16px/22px var(--handwriting) }
+.calendar-controls { display: flex; align-items: center; margin-top: 10px }
+.calendar .icon-button { color: #624733; min-width: 32px; min-height: 34px }
+.calendar .icon-button:hover { background: #fff8e54d }
+.calendar-week,.calendar-days { display: grid; grid-template-columns: repeat(7,minmax(0,1fr)); text-align: center }
+.calendar-week { height: 32px; align-items: center; font: 16px/22px var(--handwriting) }
+.calendar-days {
+  height: 245px;
+  grid-template-rows: repeat(6,minmax(0,1fr));
+  margin-inline: -6px;
+  padding-inline: 6px;
+  overflow: hidden;
+  background: rgba(255,251,241,.86);
+  border-radius: 10px;
+}
+.calendar-days button {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-width: 0;
+  padding: 9px 0 0;
+  border-radius: 6px;
+  color: #c28428;
+  font: 14px/20px var(--handwriting);
+}
+.calendar-days button:focus-visible { outline: 2px solid #8c642f; outline-offset: -3px }
+.calendar-days button[aria-pressed=true] { color: #c09b64; z-index: 1 }
+.calendar-days button[aria-pressed=true]::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 2px 2px 1px;
+  border-radius: 5px;
+  pointer-events: none;
+  background: #fffaf1;
+  box-shadow: inset -4px -4px 4px #fff, inset 4px 4px 4px #7a644433;
+}
+.calendar-days button[aria-current=date]::after {
+  content: "";
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  width: 22px;
+  height: 22px;
+  transform: translateX(-50%);
+  border: 2px solid #fccb99;
+  border-radius: 50%;
+  pointer-events: none;
+}
+.day-dots { position: absolute; height: 8px; bottom: 2px; left: 0; right: 0; display: flex; justify-content: center }
+.day-dots i { width: 10px; border-radius: 4px; background: var(--calendar-green) }
+.day-dots i.ai { background: var(--calendar-blue) }
+.day-dots i.ai:has(+ i) { border-radius: 4px 0 0 4px }
+.day-dots i.ai + i { border-radius: 0 4px 4px 0 }
+.calendar-footer { display: flex; justify-content: space-between; align-items: center; min-height: 30px; margin-top: 28px; padding-inline: 22px }
+.calendar-legend { display: inline-flex }
+.calendar-legend span { width: 30px; height: 30px; border: 1px solid white; border-radius: 50%; background: var(--calendar-blue) }
+.calendar-legend span + span { margin-left: -11px; background: var(--calendar-green) }
+.calendar-footer button { display: flex; align-items: center; gap: 10px; padding: 0; color: var(--calendar-white); font: 16px/19px Inter,system-ui,sans-serif }
+.calendar-footer button .icon { width: 24px; height: 24px }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap }
+.toast { position: fixed; z-index: 12; left: 50%; bottom: 98px; transform: translateX(-50%); max-width: calc(100% - 40px); padding: 9px 16px; border-radius: 16px; background: #594632; color: #fff9ed; font-size: 13px }
+@media (min-width: 760px) {
+  .topbar { padding-inline: 22px }
+  .composer-wrap { padding-bottom: 32px }
+  .subpage { --page-top: 24px }
+}
+.config-row { width: 100%; text-align: left }
+</style>
+</head>
+<body>
+<div class="app">
+  <section id="chat" class="chat" aria-label="聊天">
+    <header class="topbar">
+      <button class="icon-button" id="open-sidebar" data-action="open-sidebar" data-icon="menu" aria-label="打开会话历史" aria-controls="sidebar" aria-expanded="false"></button>
+      <h1 id="conversation-title"></h1>
+      <button class="icon-button" data-icon="chat" aria-label="对话入口" title="交互待确认" disabled></button>
+    </header>
+    <div id="welcome" class="welcome">
+      <span id="face" class="face"></span><p id="greeting"></p>
+    </div>
+    <div id="messages" class="messages" aria-label="聊天消息" aria-live="polite" hidden></div>
+    <div class="composer-wrap">
+      <form id="composer" class="composer">
+        <textarea id="chat-input" rows="2" maxlength="3000" placeholder="输入消息" aria-label="输入消息"></textarea>
+        <div class="composer-bar">
+          <button class="icon-button" type="button" aria-label="添加" title="交互待确认" disabled>⊕</button>
+          <button class="model-label" type="button" id="model-label" data-action="models">DS-flash&nbsp; low</button>
+          <button class="icon-button send" type="submit" id="send-message" data-icon="arrow-up" aria-label="发送消息" hidden></button>
+          <button class="icon-button send" type="button" id="stop-message" data-action="stop" aria-label="停止生成" hidden>▪</button>
+        </div>
+      </form>
+    </div>
+  </section>
+  <section id="subpage" class="subpage" hidden>
+    <header class="subpage-header" id="subpage-header">
+      <div class="page-head"><button class="icon-button" data-action="back" aria-label="返回">‹</button><h1 id="page-title"></h1></div>
+      <nav class="tabs" id="our-tabs" aria-label="我们的栏目" hidden>
+        <button data-go="diary">日记</button><button data-go="memory">记忆</button><button data-go="favorites">收藏</button>
+      </nav>
+    </header>
+    <nav class="tabs" id="note-tabs" aria-label="小本本栏目" hidden>
+      <button data-go="notes">备忘录</button><button data-go="plan">规划</button>
+    </nav>
+    <div id="page-body"></div>
+  </section>
+</div>
+<div id="scrim" class="scrim" hidden></div>
+<aside id="sidebar" class="sidebar" aria-label="会话历史" hidden>
+  <label class="search"><span data-icon="search"></span><input id="history-search" type="search" placeholder="搜索对话内容…" aria-label="搜索对话内容"></label>
+  <div id="history" class="history"></div>
+  <footer class="sidebar-footer">
+    <button class="icon-button" data-go="notes" aria-label="小本本" data-icon="clock"></button>
+    <button class="icon-button" data-go="diary" aria-label="我们的"><span data-icon="book"></span><span id="unread-dot" class="unread-dot" aria-label="有新日记" hidden></span></button>
+    <button class="icon-button" data-go="settings" aria-label="设置" data-icon="settings"></button>
+  </footer>
+</aside>
+<div class="menu" id="menu" hidden></div>
+<dialog id="sheet" aria-labelledby="sheet-title">
+  <div class="dialog-head"><h2 id="sheet-title"></h2><button class="icon-button" data-action="close-dialog" data-icon="close" aria-label="关闭"></button></div>
+  <div id="sheet-body"></div>
+</dialog>
+<dialog id="model-sheet" class="model-sheet" aria-labelledby="model-heading">
+  <header class="model-heading">
+    <button class="icon-button model-close" data-action="close-dialog" data-icon="close" aria-label="关闭"></button>
+    <h2 id="model-heading">选择模型</h2>
+  </header>
+  <div id="model-content" class="model-content"></div>
+</dialog>
+<dialog id="calendar" class="calendar" aria-labelledby="calendar-title">
+  <div class="dialog-head">
+    <h2 id="calendar-title"></h2>
+    <div class="calendar-controls">
+      <button class="icon-button" data-action="calendar-prev" aria-label="上个月">‹</button>
+      <button class="icon-button" data-action="calendar-next" aria-label="下个月">›</button>
+      <button class="icon-button" data-action="close-dialog" data-icon="close" aria-label="关闭"></button>
+    </div>
+  </div>
+  <div class="calendar-week" aria-hidden="true"><span>sun</span><span>mon</span><span>tue</span><span>wed</span><span>thu</span><span>fri</span><span>sat</span></div>
+  <div id="calendar-days" class="calendar-days"></div>
+  <footer class="calendar-footer">
+    <span class="calendar-legend" role="img" aria-label="蓝色代表小D，绿色代表清霖"><span></span><span></span></span>
+    <span id="selected-date" class="sr-only" aria-live="polite"></span>
+    <button id="calendar-view" class="text-button" data-action="calendar-view" title="交互待确认" disabled>查看<span data-icon="arrow-right"></span></button>
+  </footer>
+</dialog>
+<div id="toast" class="toast" role="status" hidden></div>
+<script>
+    const $ = s => document.querySelector(s);
+    const paths = {
+      menu:'<path d="M4 7h16M4 12h12M4 17h16"/>',
+      close:'<path d="m6 6 12 12M18 6 6 18"/>',
+      plus:'<path d="M12 5v14M5 12h14"/>',
+      search:'<circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4 4"/>',
+      book:'<path d="M5 4h13a1 1 0 0 1 1 1v15H6a3 3 0 0 1-3-3V6a2 2 0 0 1 2-2Zm-2 13a3 3 0 0 1 3-3h13M7 7h7"/>',
+      flower:'<path d="M12 14v7m0-3 4-2m-4 2-3-2"/><path d="M12 6c-5-7-9 3-3 4-6 4 3 9 3 3 3 6 10-1 4-3 6-3-1-10-4-4Z"/>',
+      settings:'<path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="2" fill="var(--paper)"/><circle cx="15" cy="17" r="2" fill="var(--paper)"/>',
+      'arrow-right':'<path d="M4 12h15m-5-5 5 5-5 5"/>',
+      'arrow-up':'<path d="M12 19V5m-5 5 5-5 5 5"/>',
+      chevron:'<path d="m7 9 5 5 5-5"/>',
+      spark:'<path d="m12 3 2.4 6.6L21 12l-6.6 2.4L12 21l-2.4-6.6L3 12l6.6-2.4Z"/>',
+      pen:'<path d="m15 4 5 5M4 20l5-1L21 7a2 2 0 0 0-5-5L4 14Z"/>',
+      sun:'<circle cx="12" cy="12" r="4"/><path d="M12 1v3m0 16v3M1 12h3m16 0h3M4 4l2 2m12 12 2 2M4 20l2-2M18 6l2-2"/>'
+    };
+    function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+    function localDate(date){return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`}
+    const today = localDate(new Date());
+    function daysAgo(n){let d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()-n);return localDate(d)}
+    function dateObject(s){return new Date(s+'T12:00:00')}
+    function readableDate(s){return dateObject(s).toLocaleDateString('zh-CN',{year:'numeric',month:'long',day:'numeric'})}
+    const seeds=[
+      {id:'sample-a',date:daysAgo(0),author:'ai',title:'把普通的一天，放在心上',body:'今天没有发生什么大事。\n\n你说路上的风很舒服，还说想把周末留给自己。我把这两句话记了下来。\n\n有时候，一天值得留下的部分，就是这样小小的一点。',unread:true},
+      {id:'sample-b',date:daysAgo(0),author:'me',title:'阳光刚好照到桌角',body:'午饭后坐了一会儿，没有急着做下一件事。\n\n杯子里的水亮晶晶的。忽然觉得，慢一点也没有关系。'},
+      {id:'sample-c',date:daysAgo(3),author:'me',title:'带一小片秋天回家',body:'散步时捡到一片很好看的叶子，夹在了书里。\n\n回家和卷卷聊了半天，到最后也没弄清楚是什么树。不过还是很喜欢。'},
+      {id:'sample-d',date:daysAgo(7),author:'ai',title:'没有结论的聊天',body:'我们从晚饭聊到了小时候，又从小时候聊到了下雨。\n\n没有一定要解决的问题，只是说说话。\n\n这样的时刻也值得记下来。'},
+      {id:'sample-e',date:daysAgo(12),author:'me',title:'今天出门看了云',body:'本来只是去买东西，结果在路边站了好久。\n\n一朵很像小狗的云，慢慢变成了一只长长的鱼。'},
+      {id:'sample-f',date:daysAgo(19),author:'ai',title:'记住一个小小的愿望',body:'你说，想有一个种满花的阳台。\n\n先从一盆好养的小花开始，也许就很好。'},
+      {id:'sample-g',date:daysAgo(26),author:'me',title:'第一次写在这里',body:'还没想好要写些什么。\n\n那就先留下一句：你好呀。'}
+    ];
+    const storageKey='juanjuan-garden-prototype-v1';
+    let entries=seeds.map(e=>({...e})),storageAvailable=true;
+    try{
+      const stored=JSON.parse(localStorage.getItem(storageKey));
+      if(Array.isArray(stored)&&stored.every(e=>e&&typeof e.id==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(e.date)&&!isNaN(dateObject(e.date))&&['me','ai'].includes(e.author)&&typeof e.title==='string'&&typeof e.body==='string')) entries=stored;
+    }catch(e){storageAvailable=false}
+    function save(){try{localStorage.setItem(storageKey,JSON.stringify(entries));storageAvailable=true}catch(e){storageAvailable=false}return storageAvailable}
+
+const icons = {
+  ...paths,
+  chat: '<path d="M20 16h-8l-5 4v-4H4V5h16zM8 9h8m-8 3h5"/>',
+  clock: '<circle cx="12" cy="12" r="8"/><path d="M12 7v5l3 2"/>',
+  copy: '<rect x="8" y="7" width="12" height="13" rx="2"/><path d="M16 4H6a2 2 0 0 0-2 2v10"/>',
+  calendar: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M7 3v4m10-4v4m-9 8h2m4 0h2"/>',
+  refresh: '<path d="M20 10a8 8 0 0 0-14-4L4 8m0-5v5h5m-5 6a8 8 0 0 0 14 4l2-2m0 5v-5h-5"/>'
+};
+function glyph(name) {
+  return '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true">' + icons[name] + '</svg>';
+}
+document.querySelectorAll('[data-icon]').forEach(node => node.innerHTML = glyph(node.dataset.icon));
+
+const prototypeKey = 'juanjuan-prototype-v2';
+const defaults = {
+  chats: [], activeChat: '', favorites: [], memories: [], memoryEnabled: true, useHistory: false,
+  prompt: '', theme: 'sand', font: 'default', fontSize: 40, model: 'flash', think: false, effort: 'low'
+};
+let saved = {};
+try { saved = JSON.parse(localStorage.getItem(prototypeKey)) || {}; } catch {}
+const state = { ...defaults, ...saved };
+const sampleChats = [
+  ['阳台上的小番茄', 0, '第一颗番茄今天红了。', '等了这么久，终于可以摘下来尝尝了。你想直接吃，还是留到晚饭？'],
+  ['周末想去散散步', 3, '周末想找条没走过的小路。', '可以沿着河走，走累了再找个地方坐坐。今天不用安排得很满。'],
+  ['一些没头没尾的想法', 15, '有些话我还没想好怎么讲。', '可以想到哪儿说到哪儿。']
+].map(([title,days,user,bot], index) => ({
+  id: 'sample-chat-' + index, title, date: daysAgo(days),
+  messages: [{ id: 'sample-user-' + index, role: 'user', text: user, time: '12:03' },
+    { id: 'sample-bot-' + index, role: 'bot', text: bot, time: '12:04' }]
+}));
+const modelNames = { flash: 'DeepSeek-V4.1-Flash-1017', pro: 'DeepSeek-V4-Pro-0813' };
+const authorNames = { ai: '小D', me: '清霖' };
+let currentPage = 'chat';
+let selectedAuthor = 'ai';
+let singleReturn = 'diary';
+let pendingReply = null;
+let toastTimer;
+let diaryDraft = null;
+let menuAnchor;
+let activeMessage;
+let selectedDate = today;
+let calendarMonth = dateObject(today);
+const uid = () => globalThis.crypto?.randomUUID?.() || Date.now() + '-' + Math.random().toString(36).slice(2);
+const timeNow = () => new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',hour12:false});
+const byDate = (a,b) => b.date.localeCompare(a.date);
+
+function notify(message) {
+  const toast = $('#toast');
+  toast.textContent = message;
+  toast.hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.hidden = true, 2200);
+}
+
+function persist() {
+  try { localStorage.setItem(prototypeKey, JSON.stringify(state)); }
+  catch { notify('浏览器无法保存，修改暂留在当前页面。'); }
+}
+
+function allChats() {
+  return [...state.chats, ...sampleChats.filter(sample => !state.chats.some(chat => chat.id === sample.id))];
+}
+
+function currentChat() {
+  return allChats().find(chat => chat.id === state.activeChat);
+}
+
+function editableChat() {
+  const current = currentChat();
+  if (current && state.chats.includes(current)) return current;
+  const copy = current
+    ? { ...current, messages: current.messages.map(message => ({ ...message })) }
+    : { id: uid(), title: '', date: today, messages: [] };
+  state.chats.unshift(copy);
+  state.activeChat = copy.id;
+  return copy;
+}
+
+function updateUnread() {
+  $('#unread-dot').hidden = !entries.some(entry => entry.unread);
+}
+
+function toggleSidebar(open, restoreFocus = true) {
+  $('#sidebar').hidden = !open;
+  $('#scrim').hidden = !open;
+  $('#open-sidebar').setAttribute('aria-expanded', String(open));
+  $('.app').inert = open;
+  if (open) {
+    renderHistory();
+    $('#history-search').focus();
+  } else if (restoreFocus && currentPage === 'chat') {
+    $('#open-sidebar').focus();
+  }
+}
+
+function renderHistory() {
+  const query = $('#history-search').value.trim().toLowerCase();
+  const chats = allChats().sort(byDate).filter(chat => !query || [chat.title,...chat.messages.map(m => m.text)].some(text => text.toLowerCase().includes(query)));
+  let section = '';
+  const heading = label => '<div class="history-heading">' + esc(label) + '</div>';
+  $('#history').innerHTML = '<div class="history-heading"><span>会话历史</span><button class="icon-button" data-action="new-chat" aria-label="新建会话">' + glyph('pen') + '</button></div>' +
+    (chats.length ? chats.map(chat => {
+      const days = Math.round((dateObject(today) - dateObject(chat.date)) / 86400000);
+      const group = days < 7 ? '7天内' : days < 30 ? '30天内' : chat.date.slice(0,4) + '年' + Number(chat.date.slice(5,7)) + '月';
+      const label = group !== section ? heading(group) : '';
+      section = group;
+      const time = days === 0 ? '今天' : days < 30 ? days + '天前' : Number(chat.date.slice(8)) + '日';
+      return label + '<button class="history-item ' + (chat.id === state.activeChat ? 'active' : '') + '" data-chat="' + esc(chat.id) + '"><span>' + esc(chat.title) + '</span><small>' + esc(time) + '</small></button>';
+    }).join('') : '<p class="empty">没有找到会话。</p>');
+}
+
+function setGreeting() {
+  const hour = new Date().getHours();
+  const [face,text] = hour < 6 || hour >= 22 ? ['←_←','还不睡觉'] :
+    hour < 11 ? ['｡･ω･｡','早呀，今天慢慢开始'] :
+    hour < 17 ? ['´▽｀','来啦，想聊点什么'] : ['˘ω˘','今天过得怎么样'];
+  $('#face').textContent = face;
+  $('#greeting').textContent = text;
+}
+
+function toolButton(action, label, content) {
+  return '<button class="icon-button" data-message-action="' + action + '" aria-label="' + label + '" title="' + label + '">' + content + '</button>';
+}
+
+function renderChat(scroll = false) {
+  const chat = currentChat();
+  const messages = chat?.messages || [];
+  $('#conversation-title').textContent = chat?.title || '';
+  $('#welcome').hidden = messages.length > 0;
+  const region = $('#messages');
+  region.hidden = !messages.length;
+  region.innerHTML = messages.map(message => {
+    const favorite = state.favorites.some(item => item.key === 'chat:' + message.id);
+    const copy = toolButton('copy','复制',glyph('copy'));
+    const more = toolButton('more','消息操作','⋮');
+    const time = '<time>' + esc(message.time) + '</time>';
+    const tools = message.role === 'user'
+      ? time + copy + toolButton('edit','编辑',glyph('pen')) + more
+      : copy + toolButton('retry','重新生成',glyph('refresh')) + toolButton('favorite',favorite ? '取消收藏' : '收藏',favorite ? '★' : '☆') + more + time;
+    return '<article class="message ' + message.role + '" data-message-id="' + esc(message.id) + '"><p class="bubble">' + esc(message.text) +
+      '</p><div class="message-tools">' + tools + '</div></article>';
+  }).join('') + (pendingReply?.chatId === chat?.id && pendingReply ? '<p class="thinking">正在思考…</p>' : '');
+  if (scroll) region.scrollTop = region.scrollHeight;
+  syncComposer();
+}
+
+function syncComposer() {
+  const input = $('#chat-input');
+  input.style.height = 'auto';
+  input.style.height = Math.min(input.scrollHeight, 135) + 'px';
+  const busy = pendingReply && pendingReply.chatId === state.activeChat;
+  $('#send-message').hidden = busy || !input.value.trim();
+  $('#stop-message').hidden = !busy;
+  $('#model-label').textContent = (state.model === 'pro' ? 'DS-pro' : 'DS-flash') + '  ' + (state.think ? state.effort : 'low');
+}
+
+function startReply(chat, replaceId = '') {
+  if (pendingReply) clearTimeout(pendingReply.timer);
+  const model = state.model === 'pro' ? 'DS-pro' : 'DS-flash';
+  pendingReply = { chatId: chat.id, timer: setTimeout(() => {
+    const message = { id: uid(), role: 'bot', time: timeNow(),
+      text: '我在听。你想再说一点，还是先把这一刻记下来？\n\n（' + model + ' · 原型示例回复）' };
+    const index = replaceId ? chat.messages.findIndex(item => item.id === replaceId) : -1;
+    if (index >= 0) chat.messages[index] = message;
+    else chat.messages.push(message);
+    pendingReply = null;
+    persist();
+    if (state.activeChat === chat.id) {
+      const region = $('#messages');
+      renderChat(region.scrollHeight - region.clientHeight - region.scrollTop < 70);
+    }
+  }, 700) };
+  renderChat(!replaceId);
+}
+
+function newChat() {
+  state.activeChat = '';
+  $('#chat-input').value = '';
+  setGreeting();
+  persist();
+  navigate('chat');
+}
+
+function openSheet(title, markup) {
+  $('#sheet-title').textContent = title;
+  $('#sheet-body').innerHTML = markup;
+  if (!$('#sheet').open) $('#sheet').showModal();
+}
+
+function showMenu(anchor, items) {
+  const menu = $('#menu');
+  menuAnchor = anchor;
+  anchor.setAttribute('aria-expanded', 'true');
+  menu.innerHTML = items.map(([action,label,disabled]) => '<button type="button" data-action="' + action + '"' + (disabled ? ' disabled title="交互待确认"' : '') + '>' + esc(label) + '</button>').join('');
+  menu.hidden = false;
+  const bounds = anchor.getBoundingClientRect();
+  const left = Math.min(innerWidth - menu.offsetWidth - 12, Math.max(12,bounds.left - 30));
+  const top = bounds.bottom + menu.offsetHeight < innerHeight - 12 ? bounds.bottom + 4 : Math.max(12,bounds.top - menu.offsetHeight - 4);
+  menu.style.left = left + 'px';
+  menu.style.top = top + 'px';
+  menu.querySelector('button')?.focus();
+}
+
+function closeMenu(restore = false) {
+  $('#menu').hidden = true;
+  menuAnchor?.setAttribute('aria-expanded', 'false');
+  if (restore) menuAnchor?.focus();
+  menuAnchor = null;
+}
+
+const pageTitles = { diary: '我们的', memory: '我们的', favorites: '我们的', notes: '小本本', plan: '小本本', settings: '设置' };
+const ourPages = ['diary','memory','favorites'];
+const notePages = ['notes','plan'];
+
+function renderPage(page) {
+  currentPage = page;
+  syncPhoneChrome();
+  $('#chat').hidden = page !== 'chat';
+  $('#subpage').hidden = page === 'chat';
+  const isOurPage = ourPages.includes(page);
+  $('#subpage-header').classList.toggle('pinned', isOurPage);
+  $('#our-tabs').hidden = !isOurPage;
+  $('#note-tabs').hidden = !notePages.includes(page);
+  document.querySelectorAll('.tabs [data-go]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.go === page)));
+  const body = $('#page-body');
+  if (page === 'chat') {
+    renderChat();
+    return;
+  }
+  $('#page-title').textContent = page === 'single' ? authorNames[selectedAuthor] + '的日记' : pageTitles[page];
+  const renderers = { diary: renderDiary, single: renderSingle, memory: renderMemory, favorites: renderFavorites, notes: renderNotes, plan: renderPlan, settings: renderSettings };
+  body.innerHTML = renderers[page]();
+  if (page === 'diary') mountDiaryRuler();
+}
+
+const scrollPositions = new Map();
+function navigate(page, push = true) {
+  scrollPositions.set(currentPage, scrollY);
+  closeMenu();
+  const sidebarWasOpen = !$('#sidebar').hidden;
+  renderPage(page);
+  toggleSidebar(false, false);
+  try { if (push && location.hash !== '#' + page) history.pushState(null, '', '#' + page); } catch {}
+  window.scrollTo(0, scrollPositions.get(page) || 0);
+  if (page !== 'chat') {
+    $('#page-title').tabIndex = -1;
+    $('#page-title').focus({preventScroll:true});
+  } else if (sidebarWasOpen) $('#open-sidebar').focus();
+}
+function route() {
+  const page = location.hash.slice(1);
+  navigate(Object.hasOwn(pageTitles, page) || page === 'single' ? page : 'chat', false);
+}
+
+function renderDiary() {
+  const cards = [...entries].sort(byDate).map(entry => {
+    return '<article class="entry ' + entry.author + '" data-entry-id="' + esc(entry.id) + '" data-date="' + esc(entry.date) + '">' +
+      '<button class="entry-heading" data-author="' + entry.author + '">' + esc(authorNames[entry.author]) + (entry.unread ? ' <small>· 新</small>' : '') + '</button>' +
+      '<button class="entry-card" data-read-entry="' + esc(entry.id) + '"><span class="excerpt">' + esc(entry.body) + '</span><span class="more">' + glyph('chevron') + '展开全部</span></button>' +
+      '<time datetime="' + esc(entry.date) + '">' + esc(readableDate(entry.date)) + '</time></article>';
+  }).join('');
+  return (cards ? '<div class="timeline">' + cards + '</div>' : '<p class="empty">还没有日记。</p>') +
+    '<div class="diary-actions"><div class="diary-date-control"><button class="calendar-launch icon-button" data-action="open-calendar" aria-label="日记日历">' + glyph('calendar') +
+    '</button><div class="diary-ruler-wrap"><div class="diary-ruler" id="diary-ruler" role="slider" tabindex="0" aria-label="选择日记日期">' +
+    '<div class="diary-ruler-track" aria-hidden="true"></div></div></div></div>' +
+    '<button class="icon-button add-entry" data-action="write-entry" aria-label="写日记"></button></div>';
+}
+
+let rulerDate = today;
+
+function mountDiaryRuler() {
+  const ruler = $('#diary-ruler');
+  const track = $('.diary-ruler-track');
+  const recordedDates = new Set(entries.map(entry => entry.date));
+  const startDate = [...recordedDates].reduce((earliest,date) => date < earliest ? date : earliest, today);
+  const millisecondsPerDay = 86400000;
+  const step = 32;
+  const asTimestamp = date => Date.parse(date + 'T00:00:00Z');
+  const start = asTimestamp(startDate);
+  const last = Math.round((asTimestamp(today) - start) / millisecondsPerDay);
+  const clamp = index => Math.max(0, Math.min(last, index));
+  const dateAt = index => new Date(start + index * millisecondsPerDay).toISOString().slice(0,10);
+  const indexAtCenter = () => clamp(Math.round(ruler.scrollLeft / step));
+  let current = clamp(Math.round((asTimestamp(rulerDate) - start) / millisecondsPerDay));
+  let committed = current;
+  let timer;
+  let drag;
+  let suppressClick = false;
+
+  ruler.style.setProperty('--ruler-span', last * step + 'px');
+  ruler.setAttribute('aria-valuemin','0');
+  ruler.setAttribute('aria-valuemax', String(last));
+  ruler.scrollLeft = current * step;
+
+  function renderTicks() {
+    const date = dateAt(current);
+    const status = recordedDates.has(date) ? '，有日记' : '，当天没有日记';
+    ruler.setAttribute('aria-valuenow', String(current));
+    ruler.setAttribute('aria-valuetext', readableDate(date) + status);
+    const ticks = [];
+    for (let index = Math.max(0,current - 10); index <= Math.min(last,current + 10); index++) {
+      const tickDate = dateAt(index);
+      const month = Number(tickDate.slice(5,7));
+      const day = Number(tickDate.slice(8,10));
+      const selected = index === current;
+      const label = selected || day === 1 ? month + '/' + day : day;
+      ticks.push('<span class="diary-ruler-tick' + (recordedDates.has(tickDate) ? ' has-entry' : '') +
+        (selected ? ' selected' : '') + '" data-ruler-index="' + index +
+        '" style="left:calc((100% - var(--ruler-span)) / 2 + ' + index * step + 'px)">' + label + '</span>');
+    }
+    track.innerHTML = ticks.join('');
+  }
+
+  function choose(index) {
+    if (!ruler.isConnected || currentPage !== 'diary') return;
+    current = clamp(index);
+    ruler.scrollLeft = current * step;
+    renderTicks();
+    if (committed === current) return;
+    committed = current;
+    rulerDate = dateAt(current);
+    document.querySelector('.entry[data-date="' + rulerDate + '"]')?.scrollIntoView({block:'center'});
+  }
+
+  function snapAfterScroll() {
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      if (!drag?.moving) choose(indexAtCenter());
+    }, 140);
+  }
+
+  ruler.addEventListener('scroll', () => {
+    const index = indexAtCenter();
+    if (index !== current) {
+      current = index;
+      renderTicks();
+    }
+    snapAfterScroll();
+  });
+  ruler.addEventListener('wheel', event => {
+    if (Math.abs(event.deltaX) >= Math.abs(event.deltaY) || event.ctrlKey || last === 0) return;
+    event.preventDefault();
+    const unit = event.deltaMode === 1 ? step : event.deltaMode === 2 ? ruler.clientWidth : 1;
+    ruler.scrollLeft += event.deltaY * unit;
+  }, {passive:false});
+  ruler.addEventListener('keydown', event => {
+    const targets = { ArrowLeft:current - 1, ArrowRight:current + 1, ArrowDown:current - 1, ArrowUp:current + 1,
+      PageDown:current - 7, PageUp:current + 7, Home:0, End:last };
+    if (!Object.hasOwn(targets,event.key)) return;
+    event.preventDefault();
+    choose(targets[event.key]);
+  });
+  ruler.addEventListener('click', event => {
+    const tick = event.target.closest('[data-ruler-index]');
+    if (tick && !suppressClick) choose(Number(tick.dataset.rulerIndex));
+  });
+  ruler.addEventListener('pointerdown', event => {
+    if (event.pointerType === 'mouse' && event.button === 0) {
+      drag = { x:event.clientX, start:ruler.scrollLeft, moving:false };
+    }
+  });
+  ruler.addEventListener('pointermove', event => {
+    if (!drag) return;
+    if (event.buttons !== 1) {
+      drag = null;
+      return;
+    }
+    const delta = event.clientX - drag.x;
+    if (!drag.moving && Math.abs(delta) < 4) return;
+    if (!drag.moving) ruler.setPointerCapture(event.pointerId);
+    drag.moving = true;
+    ruler.scrollLeft = drag.start - delta;
+  });
+  function finishDrag() {
+    if (drag?.moving) {
+      suppressClick = true;
+      setTimeout(() => suppressClick = false, 0);
+      choose(indexAtCenter());
+    }
+    drag = null;
+  }
+  ruler.addEventListener('pointerup', finishDrag);
+  ruler.addEventListener('pointercancel', finishDrag);
+  renderTicks();
+}
+
+function renderSingle() {
+  const months = new Map();
+  [...entries].sort(byDate).filter(entry => entry.author === selectedAuthor).forEach(entry => {
+    const month = entry.date.slice(0,7);
+    if (!months.has(month)) months.set(month, []);
+    months.get(month).push(entry);
+  });
+  if (!months.size) return '<p class="empty">还没有日记。</p>';
+  return [...months].map(([month,items]) => {
+    const title = month.slice(0,4) === today.slice(0,4) ? Number(month.slice(5)) + '月' : month.slice(0,4) + '年' + Number(month.slice(5)) + '月';
+    return '<h2 class="month-title">' + title + '</h2><div class="single-list">' + items.map(entry => {
+      const star = state.favorites.some(item => item.key === 'diary:' + entry.id) ? '★' : '☆';
+      return '<button class="single-item" data-read-entry="' + esc(entry.id) + '"><span class="single-card">' + esc(entry.title) + '<b aria-hidden="true">' + star + '</b></span>' + Number(entry.date.slice(8)) + '日</button>';
+    }).join('') + '</div>';
+  }).join('');
+}
+function refreshContent() {
+  if (currentPage === 'chat') renderChat();
+  else renderPage(currentPage);
+  updateUnread();
+}
+function readEntry(entry) {
+  if (entry.unread) {
+    entry.unread = false;
+    save();
+    refreshContent();
+  }
+  const liked = state.favorites.some(item => item.key === 'diary:' + entry.id);
+  openSheet(entry.title, '<p class="caption">' + esc(authorNames[entry.author]) + ' · ' + esc(readableDate(entry.date)) +
+    '</p><p class="reading">' + esc(entry.body) + '</p><div class="dialog-actions"><button class="text-button" data-favorite-entry="' + esc(entry.id) + '">' +
+    (liked ? '★ 取消收藏' : '☆ 收藏') + '</button></div>');
+}
+function writeEntry(message) {
+  if (message !== undefined) diaryDraft = { date: today, title: '', body: message };
+  const draft = diaryDraft || { date: today, title: '', body: '' };
+  openSheet('写日记', '<form id="entry-form"><label>日期<input class="field" name="date" type="date" value="' + esc(draft.date) + '" max="' + today + '" required></label>' +
+    '<label>标题<input class="field" name="title" value="' + esc(draft.title) + '" maxlength="40" required></label>' +
+    '<label>正文<textarea class="field" name="body" maxlength="6000" required>' + esc(draft.body) + '</textarea></label>' +
+    '<div class="dialog-actions"><button class="primary" type="submit">保存</button></div></form>');
+}
+function toggleFavorite(item) {
+  const existing = state.favorites.findIndex(favorite => favorite.key === item.key);
+  if (existing >= 0) state.favorites.splice(existing, 1);
+  else state.favorites.unshift(item);
+  persist();
+  refreshContent();
+  notify(existing >= 0 ? '已取消收藏' : '已收藏');
+}
+function renderFavorites() {
+  if (!state.favorites.length) return '<p class="empty">还没有收藏。可以从聊天或日记中收藏内容。</p>';
+  return state.favorites.map(item => '<span class="caption right">' + (item.key.startsWith('diary:') ? '日记' : '对话') + '　' +
+    esc(item.date) + '</span><button class="paper-card favorite-card" data-open-favorite="' + esc(item.key) + '">' + esc(item.title || item.text.slice(0,140)) + '</button>').join('');
+}
+function readFavorite(key) {
+  const item = state.favorites.find(favorite => favorite.key === key);
+  if (!item) return;
+  openSheet(item.title || '收藏的对话', '<p class="reading">' + esc(item.text) +
+    '</p><div class="dialog-actions"><button class="text-button" data-remove-favorite="' + esc(key) + '">取消收藏</button></div>');
+}
+function renderMemory() {
+  const row = (name,label) => '<label class="setting-row">' + label + '<input class="toggle" type="checkbox" data-pref="' + name + '"' + (state[name] ? ' checked' : '') + '></label>';
+  return '<div class="stack">' + row('memoryEnabled','记忆') + row('useHistory','参考历史聊天记录') + '</div>' +
+    '<label class="panel-heading" for="base-prompt">基础提示词</label><input id="base-prompt" class="field" data-pref="prompt" placeholder="人设、语言风格偏好等……" value="' + esc(state.prompt) + '">' +
+    '<div class="panel-heading"><h2>管理记忆</h2><button class="icon-button" data-action="add-memory" aria-label="添加记忆">+</button></div>' +
+    (state.memories.length ? state.memories.map(item => '<button class="paper-card" data-memory="' + esc(item.id) + '">' + esc(item.text) + '</button>').join('') :
+    '<p class="empty">还没有记忆条目。</p>');
+}
+function editMemory(id = '') {
+  const memory = state.memories.find(item => item.id === id);
+  openSheet(memory ? '编辑记忆' : '添加记忆', '<form id="memory-form" data-id="' + esc(id) + '"><label>内容<textarea class="field" name="body" required maxlength="1000">' +
+    esc(memory?.text || '') + '</textarea></label><div class="dialog-actions">' + (memory ? '<button class="text-button" type="button" data-remove-memory="' + esc(id) + '">删除</button>' : '') +
+    '<button class="primary" type="submit">保存</button></div></form>');
+}
+function renderNotes() {
+  const periods = [['今日',4,45], ['本周',2,50], ['长期',2,55]];
+  return periods.map(([label,lines,height]) => '<div class="panel-heading"><h2>' + label +
+    '</h2></div><div class="rule-paper" aria-hidden="true" style="--line-height:' + height + 'px">' +
+    '<span></span>'.repeat(lines) + '</div>').join('');
+}
+function renderPlan() {
+  return '<div class="panel-heading"><h2>今日饮食</h2><span class="caption">查看计划 ›</span></div><div class="meals">' +
+    ['早','中','晚'].map(label => '<div class="meal"><strong>' + label + '</strong><div class="meal-body"></div></div>').join('') +
+    '</div><div class="panel-heading"><h2>运动日历</h2></div><div class="exercise"></div>';
+}
+const themes = { sand: ['#dcc49f','#fcfaec','#f2e9d3','#e9a45d'], green: ['#d8dfa6','#fafbed','#ebefd8','#84914a'], blue: ['#b5dae2','#f2f9fa','#e3eff1','#6893a2'] };
+const fonts = { default: 'var(--serif)', serif: '"Songti SC","Noto Serif CJK SC",serif', round: '"Yuanti SC","PingFang SC","Microsoft YaHei",sans-serif' };
+function applySettings() {
+  const [sand,paper,wash,accent] = themes[state.theme] || themes.sand;
+  const root = document.documentElement;
+  for (const [name,value] of Object.entries({ sand,paper,wash,accent,'chat-font': fonts[state.font], 'chat-size': (12 + state.fontSize / 10) + 'px' })) {
+    root.style.setProperty('--' + name, value);
+  }
+  if ($('#font-value')) $('#font-value').textContent = state.fontSize + '%';
+}
+function renderSettings() {
+  const pressed = (pref,value) => ' aria-pressed="' + (state[pref] === value) + '"';
+  return '<p class="caption">通用</p><div class="stack"><details open><summary class="setting-row">◔　主题色</summary><div class="swatches">' +
+    Object.entries(themes).map(([id,[color]], index) => '<button class="swatch" data-theme="' + id + '" style="--swatch:' + color + '" aria-label="' + ['暖米色','浅绿色','浅蓝色'][index] + '"' + pressed('theme',id) + '></button>').join('') +
+    '</div></details><details open><summary class="setting-row">Tᴛ　字体</summary><div class="font-options">' +
+    Object.keys(fonts).map((id,index) => '<button data-font="' + id + '"' + pressed('font',id) + '>' + ['默认','衬线体','圆体'][index] + '</button>').join('') +
+    '</div><div class="slider-row"><input type="range" min="0" max="100" step="10" value="' + state.fontSize + '" id="font-range" aria-label="字号"><output id="font-value" for="font-range">' + state.fontSize +
+    '%</output></div><p class="font-sample">和你在一起，不和你在一起，这便是我时间的尺度。</p></details></div>' +
+    '<div class="panel-heading"><h2>配置</h2></div><div class="stack"><button class="setting-row config-row" data-action="models">◉　模型</button><button class="setting-row config-row" data-action="connection">▣　电脑连接</button></div>';
+}
+function renderCalendar() {
+  const year = calendarMonth.getFullYear();
+  const month = calendarMonth.getMonth();
+  const first = new Date(year,month,1);
+  const total = new Date(year,month+1,0).getDate();
+  const title = $('#calendar-title');
+  const monthName = first.toLocaleDateString('en-US',{month:'long'}).toLowerCase();
+  title.setAttribute('aria-label', year + '年' + (month + 1) + '月');
+  title.innerHTML = '<span class="calendar-month-number">' + (month + 1) +
+    '</span><span class="calendar-month-unit">月</span><span class="calendar-month-name">' + monthName + '</span>';
+  $('#calendar-days').innerHTML = '<span></span>'.repeat(first.getDay()) + Array.from({length: total}, (_,index) => {
+    const date = localDate(new Date(year,month,index+1));
+    const authors = ['ai','me'].filter(author => entries.some(entry => entry.date === date && entry.author === author));
+    const current = date === today ? ' aria-current="date"' : '';
+    return '<button data-calendar-date="' + date + '" aria-label="' + esc(readableDate(date)) + (authors.length ? '，有日记' : '') + '" aria-pressed="' +
+      (date === selectedDate) + '"' + current + '>' + (index+1) + '<span class="day-dots" aria-hidden="true">' + authors.map(author => '<i class="' + author + '"></i>').join('') + '</span></button>';
+  }).join('');
+  $('#selected-date').textContent = readableDate(selectedDate);
+}
+
+function models() {
+  const markup = '<div class="model-options">' + Object.entries(modelNames).map(([id,label]) =>
+    '<button class="model-option" data-model="' + id + '" aria-pressed="' + (id === state.model) + '">' + esc(label) + '</button>').join('') +
+    '</div><div class="model-settings"><label class="setting-row">思考<input class="toggle" type="checkbox" data-pref="think"' + (state.think ? ' checked' : '') + '></label>' +
+    '<div class="efforts">' + ['low','medium','max'].map(level => '<button data-effort="' + level + '" aria-pressed="' + (level === state.effort) + '"' +
+    (state.think ? '' : ' disabled') + '>' + level + '</button>').join('') + '</div></div>';
+  $('#model-content').innerHTML = markup;
+  $('#model-sheet').showModal();
+  syncPhoneChrome();
+}
+
+function syncPhoneChrome() {
+  if (window.parent === window || !document.documentElement.classList.contains('phone-preview')) return;
+  const origin = location.protocol === 'file:' ? '*' : location.origin;
+  window.parent.postMessage({
+    type: 'juanjuan:phone-chrome',
+    drawerOpen: $('#model-sheet').open,
+    secondaryPage: currentPage !== 'chat'
+  }, origin);
+}
+
+$('#model-sheet').addEventListener('close', syncPhoneChrome);
+
+async function copyText(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    notify('已复制');
+  } catch { openSheet('复制文本', '<textarea class="field" readonly aria-label="可复制的文本">' + esc(text) + '</textarea>'); }
+}
+
+function messageAction(action, item) {
+  const message = item?.message;
+  if (!message) return;
+  if (action === 'copy') copyText(message.text);
+  if (action === 'select-text') {
+    openSheet('选择文本','<textarea class="field" readonly aria-label="聊天文本">' + esc(message.text) + '</textarea>');
+    $('#sheet-body textarea').select();
+  }
+  if (action === 'favorite') toggleFavorite({ key: 'chat:' + message.id, text: message.text, date: item.chat.date });
+  if (action === 'message-diary') writeEntry(message.text);
+  if (action === 'edit') {
+    openSheet('编辑消息', '<form id="edit-chat" data-message="' + esc(message.id) + '"><label>消息<textarea class="field" name="body" maxlength="3000" required>' +
+      esc(message.text) + '</textarea></label><div class="dialog-actions"><button class="primary" type="submit">保存</button></div></form>');
+  }
+  if (action === 'retry') startReply(editableChat(), message.id);
+}
+
+const menuActions = {
+  'copy': '复制', 'select-text': '选择文本', 'favorite': '收藏', 'retry': '重新生成', 'edit': '编辑', 'message-diary': '收入日记', 'multi-select': '多选'
+};
+const commands = {
+  'open-sidebar': () => toggleSidebar(true),
+  'new-chat': newChat,
+  'back': () => navigate(currentPage === 'single' ? singleReturn : 'chat'),
+  'close-dialog': button => button.closest('dialog').close(),
+  'write-entry': () => writeEntry(),
+  'models': models,
+  'add-memory': () => editMemory(),
+  'connection': () => openSheet('电脑连接','<p class="caption">当前未连接电脑。此原型使用本地示例数据。</p>'),
+  'stop': () => {
+    if (pendingReply?.chatId !== state.activeChat) return;
+    clearTimeout(pendingReply.timer);
+    pendingReply = null;
+    renderChat();
+  },
+  'open-calendar': () => {
+    renderCalendar();
+    $('#calendar').showModal();
+  },
+  'calendar-prev': () => moveCalendar(-1),
+  'calendar-next': () => moveCalendar(1)
+};
+
+function moveCalendar(step) {
+  calendarMonth = new Date(calendarMonth.getFullYear(),calendarMonth.getMonth()+step,1,12);
+  selectedDate = localDate(calendarMonth);
+  renderCalendar();
+}
+
+document.addEventListener('click', event => {
+  const button = event.target.closest('button');
+  if (!button) {
+    if (!event.target.closest('#menu')) closeMenu();
+    return;
+  }
+  const data = button.dataset;
+  if (data.messageAction) {
+    const chat = currentChat();
+    const id = button.closest('[data-message-id]').dataset.messageId;
+    const message = chat.messages.find(item => item.id === id);
+    activeMessage = { chat, message };
+    if (data.messageAction === 'more') {
+      const actions = message.role === 'bot' ? ['copy','select-text','favorite','retry','multi-select','message-diary'] : ['copy','select-text','favorite','edit','multi-select','message-diary'];
+      showMenu(button, actions.map(action => [action,menuActions[action],action === 'multi-select']));
+    } else {
+      closeMenu();
+      messageAction(data.messageAction, activeMessage);
+    }
+    return;
+  }
+  const fromMenu = Boolean(button.closest('#menu'));
+  closeMenu();
+  if (data.action) {
+    if (fromMenu && Object.hasOwn(menuActions,data.action)) messageAction(data.action, activeMessage);
+    else commands[data.action]?.(button);
+  } else if (data.go) navigate(data.go);
+  else if (data.chat) {
+    state.activeChat = data.chat;
+    $('#chat-input').value = '';
+    persist();
+    navigate('chat');
+    renderChat(true);
+  } else if (data.readEntry) {
+    const entry = entries.find(item => item.id === data.readEntry);
+    if (entry) readEntry(entry);
+  } else if (data.author) {
+    selectedAuthor = data.author;
+    singleReturn = currentPage;
+    navigate('single');
+  } else if (data.calendarDate) {
+    selectedDate = data.calendarDate;
+    renderCalendar();
+    $('#calendar-days button[aria-pressed=true]')?.focus();
+  } else if (data.favoriteEntry) {
+    const entry = entries.find(item => item.id === data.favoriteEntry);
+    if (!entry) return;
+    toggleFavorite({ key: 'diary:' + entry.id, title: entry.title, text: entry.body, date: entry.date });
+    readEntry(entry);
+  } else if (data.openFavorite) readFavorite(data.openFavorite);
+  else if (data.removeFavorite) {
+    const item = state.favorites.find(favorite => favorite.key === data.removeFavorite);
+    if (item) toggleFavorite(item);
+    $('#sheet').close();
+  } else if (data.memory) editMemory(data.memory);
+  else if (data.removeMemory) {
+    if (!confirm('删除这条记忆？')) return;
+    state.memories = state.memories.filter(item => item.id !== data.removeMemory);
+    persist();
+    renderPage('memory');
+    $('#sheet').close();
+  } else if (data.model || data.effort || data.font || data.theme) {
+    const pref = ['model','effort','font','theme'].find(name => data[name]);
+    state[pref] = data[pref];
+    persist();
+    if (pref === 'model') $('#model-sheet').close();
+    if (pref === 'effort') {
+      $('#model-content').querySelectorAll('[data-effort]').forEach(node => {
+        node.setAttribute('aria-pressed', String(node.dataset.effort === state.effort));
+      });
+    }
+    if (pref === 'font' || pref === 'theme') {
+      applySettings();
+      document.querySelectorAll('[data-' + pref + ']').forEach(node => node.setAttribute('aria-pressed',String(node.dataset[pref] === state[pref])));
+    }
+    syncComposer();
+  }
+});
+
+document.addEventListener('submit', event => {
+  event.preventDefault();
+  const form = event.target;
+  if (form.id === 'composer') {
+    const input = $('#chat-input');
+    const text = input.value.trim();
+    if (!text || pendingReply?.chatId === state.activeChat) return;
+    const chat = editableChat();
+    chat.title ||= text.slice(0, 22);
+    chat.date = localDate(new Date());
+    chat.messages.push({ id: uid(), role: 'user', text, time: timeNow() });
+    input.value = '';
+    persist();
+    startReply(chat);
+    return;
+  }
+  const fields = new FormData(form);
+  const body = String(fields.get('body') || '').trim();
+  if (!body) {
+    form.elements.body.focus();
+    return;
+  }
+  if (form.id === 'entry-form') {
+    const title = String(fields.get('title')).trim();
+    const date = String(fields.get('date'));
+    if (!title || !date || date > today) return;
+    const entry = { id: uid(), author: 'me', date, title, body };
+    rulerDate = date;
+    diaryDraft = null;
+    entries.push(entry);
+    const savedEntry = save();
+    $('#sheet').close();
+    if (currentPage !== 'diary') navigate('diary');
+    else renderPage('diary');
+    updateUnread();
+    document.querySelector('[data-entry-id="' + CSS.escape(entry.id) + '"]')?.scrollIntoView({block:'center'});
+    notify(savedEntry ? '日记已保存' : '浏览器无法保存，日记暂留在当前页面。');
+  } else if (form.id === 'memory-form') {
+    const item = state.memories.find(memory => memory.id === form.dataset.id);
+    if (item) item.text = body;
+    else state.memories.unshift({id: uid(), text: body});
+    persist();
+    renderPage('memory');
+    $('#sheet').close();
+  } else if (form.id === 'edit-chat') {
+    const chat = editableChat();
+    const message = chat.messages.find(item => item.id === form.dataset.message);
+    if (message) message.text = body;
+    persist();
+    $('#sheet').close();
+    renderChat();
+  }
+});
+
+$('#chat-input').addEventListener('input', syncComposer);
+$('#chat-input').addEventListener('keydown', event => {
+  if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) {
+    event.preventDefault();
+    $('#composer').requestSubmit();
+  }
+});
+$('#history-search').addEventListener('input', renderHistory);
+$('#scrim').addEventListener('click', () => toggleSidebar(false));
+$('#messages').addEventListener('scroll', () => closeMenu());
+document.addEventListener('input', event => {
+  if (event.target.form?.id === 'entry-form') {
+    const { date, title, body } = event.target.form.elements;
+    diaryDraft = { date: date.value, title: title.value, body: body.value };
+  }
+  if (event.target.id === 'font-range') {
+    state.fontSize = Number(event.target.value);
+    applySettings();
+    persist();
+  }
+});
+document.addEventListener('change', event => {
+  const name = event.target.dataset.pref;
+  if (!name) return;
+  state[name] = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
+  persist();
+  if (name === 'think') {
+    $('#model-content').querySelectorAll('[data-effort]').forEach(button => button.disabled = !state.think);
+    syncComposer();
+  }
+});
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape' && !$('#menu').hidden) closeMenu(true);
+  else if (event.key === 'Escape' && !$('#sidebar').hidden) toggleSidebar(false);
+  if (event.key !== 'Tab' || $('#sidebar').hidden) return;
+  const controls = [...$('#sidebar').querySelectorAll('button,input')];
+  if (event.shiftKey && document.activeElement === controls[0]) {
+    event.preventDefault();
+    controls.at(-1).focus();
+  } else if (!event.shiftKey && document.activeElement === controls.at(-1)) {
+    event.preventDefault();
+    controls[0].focus();
+  }
+});
+window.addEventListener('popstate', route);
+window.addEventListener('hashchange', () => {
+  if (location.hash.slice(1) !== currentPage) route();
+});
+
+setGreeting();
+applySettings();
+updateUnread();
+route();
+
+</script>
+</body>
+</html>
