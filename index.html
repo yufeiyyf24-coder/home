@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#fcfaec">
-<title>卷卷</title>
+<meta name="theme-color" content="#FFFDEF">
+<title>小家</title>
 <script>if (new URLSearchParams(location.search).has('phone')) document.documentElement.classList.add('phone-preview');</script>
 <style>
 @font-face {
@@ -15,20 +15,25 @@
 }
 :root {
   color-scheme: light;
-  --paper: #fcfaec;
-  --surface: #fffdf6;
-  --ink: #403d36;
-  --brown: #75644d;
-  --muted: #726c61;
-  --line: #d9cdb7;
-  --wash: #f2e9d3;
-  --accent: #e9a45d;
-  --sand: #dcc49f;
-  --shadow: 1px 4px 8px #68573330;
-  --serif: "Songti SC","Noto Serif CJK SC","Microsoft YaHei",serif;
+  --paper: #FFFDEF;
+  --surface: #FFFFFF;
+  --card: rgba(255,255,255,.51);
+  --ink: #453F36;
+  --brown: #736249;
+  --muted: #958F85;
+  --line: #D9CDB7;
+  --wash: rgba(223,199,162,.22);
+  --accent: #E9A866;
+  --sand: #DFC7A2;
+  --quote: #9A8970;
+  --shadow: 4px 4px 6px rgba(122,100,68,.2);
+  --serif: "SimSun","SimSong","Songti SC","Noto Serif CJK SC",serif;
+  --round: "Yuanti SC","PingFang SC","Microsoft YaHei",sans-serif;
+  --handwriting: "HanziPen SC","KaiTi","STKaiti",cursive;
+  --ui: -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
   --chat-font: var(--serif);
   --chat-size: 16px;
-  font-family: -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+  font-family: var(--ui);
 }
 * { box-sizing: border-box }
 .phone-preview { scrollbar-width: none }
@@ -47,41 +52,78 @@ h1,h2,h3,p { margin-top: 0 }
 .topbar h1 { font-size: 20px; text-align: center; margin: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-weight: 500 }
 .topbar > :first-child { justify-self: start }
 .topbar > :last-child { justify-self: end }
+.select-topbar { min-height: 68px; padding-inline: 20px }
+.select-topbar h1 { font-size: 17px }
+.select-all { justify-self: end; padding: 8px 6px; border-radius: 10px; color: var(--brown); font-family: var(--ui); font-size: 13px; white-space: nowrap }
+.select-all:hover { background: var(--wash) }
+#chat.selecting > .topbar:not(.select-topbar) { display: none }
+#chat.selecting .messages { padding-inline: max(36px,7.8vw) }
+#chat.selecting .composer-wrap { display: none }
+.chat-select-actions { display: flex; flex: none; justify-content: center; gap: 48px; margin: 10px 32px max(14px,env(safe-area-inset-bottom)) }
+.chat-select-actions button { display: grid; place-items: center; width: 48px; height: 48px; border: 1px solid var(--line); border-radius: 50%; background: var(--card); color: var(--brown) }
+.chat-select-actions button:disabled { opacity: .4 }
+.chat-select-actions .icon { width: 24px; height: 24px; stroke-width: 1.6 }
+.chat-select-actions .danger { color: #b4532f }
 .chat { height: 100dvh; display: flex; flex-direction: column }
-.welcome { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 16px 18px 36px; text-align: center }
-.face { color: var(--accent); font-size: 36px; line-height: 1; font-weight: 650; letter-spacing: .07em; margin-bottom: 18px }
-.welcome p { font-size: 28px; color: #596071; letter-spacing: .12em; margin: 0 }
-.messages { flex: 1; overflow: auto; min-height: 0; padding: 8px clamp(20px,7vw,34px) 16px; overflow-wrap: anywhere }
+.welcome { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px 18px 0; text-align: center }
+.face { color: var(--accent); font-size: 32px; line-height: 20px; font-weight: 700; letter-spacing: .08em; margin-bottom: 37px }
+.welcome p { font-size: 32px; line-height: 20px; color: #5B5F6B; letter-spacing: .08em; margin: 0 }
+.messages { flex: 1; overflow: auto; min-height: 0; padding: 8px clamp(20px,7.8vw,34px) 16px; overflow-wrap: anywhere }
 .message { margin-bottom: 24px }
+.message.highlight { border-radius: 12px; background: rgba(233,168,102,.18); box-shadow: 0 0 0 6px rgba(233,168,102,.18); animation: message-highlight 1.8s ease }
+@keyframes message-highlight { 0% { background: rgba(233,168,102,.34) } 100% { background: transparent } }
 .message.user { display: grid; justify-items: end }
+.message.selecting { position: relative; cursor: pointer }
+.message.selecting:not(.user) { padding-left: 30px; margin-left: -30px }
+.message.user.selecting { padding-right: 30px; margin-right: -30px }
+.message-check { position: absolute; top: 2px; left: 0; width: 20px; height: 20px; border: 1.5px solid #958F85; border-radius: 50%; background: var(--paper) }
+.message.user .message-check { left: auto; right: 0 }
+.message.selected { border-radius: 12px; background: rgba(233,168,102,.12); box-shadow: 0 0 0 6px rgba(233,168,102,.12) }
+.message.selected .message-check { border-color: var(--accent); background: var(--accent) }
+.message.selected .message-check::after { content: ""; width: 8px; height: 4px; border-left: 2px solid #fff; border-bottom: 2px solid #fff; transform: rotate(-45deg) translate(1px,-1px) }
+.message.selecting .message-tools, .message.selecting .think-toggle { display: none }
+@media (pointer: coarse) { .message { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none } }
 .bubble { font-family: var(--chat-font); font-size: var(--chat-size); line-height: 1.72; white-space: pre-wrap; margin: 0; max-width: 100% }
-.user .bubble { max-width: 82%; background: var(--wash); border-radius: 17px; padding: 11px 16px }
+.user .bubble { max-width: 82%; background: rgba(223,199,162,.35); border-radius: 15px; padding: 12px 16px }
 .message-tools { display: flex; align-items: center; gap: 3px; color: var(--muted); margin-top: 3px }
 .message-tools .icon-button { min-width: 32px; min-height: 34px; font-size: 19px }
 .message-tools .icon { width: 16px; height: 16px }
 .message-tools time { font-size: 11px; padding: 0 5px }
 .thinking { font-size: 12px; color: var(--muted); padding: 5px 0 }
-.composer-wrap { position: relative; padding: 8px 18px max(24px, env(safe-area-inset-bottom)); flex: none }
-.composer { border: 1px dashed var(--brown); border-radius: 25px 25px 6px 6px; background: var(--surface); padding: 12px 14px 10px; box-shadow: 0 12px 18px #68573316 }
-.composer textarea { display: block; width: 100%; resize: none; border: 0; background: transparent; min-height: 50px; max-height: 135px; padding: 4px; font-family: var(--serif); line-height: 1.5 }
+.composer-wrap { position: relative; padding: 8px 19px max(8px, env(safe-area-inset-bottom)); flex: none }
+.composer { border: .5px solid rgba(0,0,0,.25); border-radius: 25px 25px 5px 5px; background: var(--card); padding: 12px 14px 10px; box-shadow: 0 15px 20px rgba(148,149,133,.21); min-height: 115px }
+.composer textarea { display: block; width: 100%; resize: none; border: 0; background: transparent; min-height: 50px; max-height: 135px; padding: 4px; font-family: var(--serif); font-size: 16px; line-height: 1.5 }
+.composer textarea::placeholder { color: var(--muted); font-family: var(--serif); font-size: 16px }
 .composer textarea:focus { outline: none }
-.composer:focus-within { border-color: #96662f }
-.composer-bar { display: flex; align-items: center; gap: 8px }
-.composer-bar .icon-button { min-width: 37px; min-height: 36px }
-.model-label { background: var(--sand); color: #4b3927; font-size: 12px; padding: 6px 12px; border-radius: 20px }
-.send { margin-left: auto; background: var(--wash) }
+.composer-bar { display: flex; align-items: center; gap: 15px }
+.composer-bar .icon-button { width: 32px; height: 32px; min-width: 0; min-height: 0; padding: 0 }
+.composer-bar .icon-button .icon { width: 32px; height: 32px }
+.composer-bar [data-action=attach] .icon { stroke-width: 2.5 }
+.model-label { display: inline-flex; align-items: center; justify-content: flex-start; gap: 9px; min-width: 103px; height: 26px; padding: 0 11px; background: var(--sand); color: #fff; font-family: Inter,system-ui,sans-serif; font-size: 12px; line-height: 20px; border-radius: 13px }
+.model-label b { font-weight: 700 }
+.send { margin-left: auto; margin-right: 8px; background: none; color: #D9D9D9 }
+.send.active { color: var(--accent) }
+.send:disabled { opacity: 1 }
+#stop-message { color: var(--brown); font-size: 16px; line-height: 1 }
+.topbar .icon-button .icon { width: 32px; height: 32px }
 .scrim { position: fixed; inset: 0; background: #3a352f50; z-index: 5 }
-.sidebar { position: fixed; z-index: 6; inset: 0 auto 0 0; width: min(320px,85vw); border-radius: 0 26px 26px 0; display: flex; flex-direction: column; background: var(--paper); padding: max(24px,env(safe-area-inset-top)) 24px max(22px,env(safe-area-inset-bottom)); color: var(--brown) }
-.search { background: #e8e1d4; height: 38px; display: flex; align-items: center; gap: 10px; padding: 0 12px; border-radius: 25px }
-.search input { width: 100%; border: 0; background: transparent; font-family: var(--serif) }
+.sidebar { position: fixed; z-index: 6; inset: 0 auto 0 0; width: min(320px,85vw); border-radius: 0 25px 25px 0; display: flex; flex-direction: column; overflow: hidden; background: var(--paper); padding: max(24px,env(safe-area-inset-top)) 25px max(16px,env(safe-area-inset-bottom)); color: var(--brown) }
+.search { background: #E8E1D5; height: 36px; display: flex; align-items: center; gap: 10px; padding: 0 12px; border-radius: 18px }
+.search input { width: 100%; border: 0; background: transparent; font-family: var(--serif); font-size: 16px; color: #625B50 }
+.search input, .search input:focus, .search input:focus-visible { outline: none !important; box-shadow: none !important; border: 0 }
+.search .icon { width: 24px; height: 24px; color: var(--muted) }
 .history { overflow: auto; flex: 1 }
 .history-heading { display: flex; align-items: center; justify-content: space-between; min-height: 38px; color: var(--muted); font-size: 12px; padding: 10px 5px 0 }
-.history-item { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 10px; text-align: left; border-radius: 18px; padding: 10px 13px; font-family: var(--serif) }
+.history-heading .icon-button { color: var(--muted); margin-right: 3px }
+.history-heading .icon-button .icon { width: 20px; height: 20px; stroke-width: 2.4 }
+.history-item { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 10px; text-align: left; border-radius: 15px; padding: 10px 18px 10px 13px; font-family: var(--serif); font-size: 16px; color: var(--ink) }
 .history-item span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
-.history-item small { white-space: nowrap; color: var(--muted); font: 11px sans-serif }
-.history-item:hover,.history-item.active { background: var(--wash) }
+.history-item small { white-space: nowrap; color: var(--muted); font: 12px var(--ui) }
+.history-row.active .history-item { color: #C28428 }
 .sidebar-footer { display: flex; align-items: center; gap: 10px; margin-top: 16px }
-.sidebar-footer .icon-button { background: var(--wash); min-width: 37px; min-height: 37px; position: relative }
+.sidebar-footer .icon-button { background: none; color: #C09B64; min-width: 37px; min-height: 37px; position: relative }
+.sidebar-footer .icon-button .icon { width: 24px; height: 24px; stroke-width: 2 }
+.sidebar-footer [data-icon] { display: inline-grid; place-items: center }
 .sidebar-footer > :last-child { margin-left: auto }
 .unread-dot { position: absolute; right: 5px; top: 5px; width: 7px; height: 7px; border-radius: 50%; background: #bc7040 }
 .subpage {
@@ -122,15 +164,19 @@ h1,h2,h3,p { margin-top: 0 }
 }
 .subpage-header.pinned .tabs { margin-bottom: 0 }
 .page-head { display: flex; align-items: center; gap: 9px; margin: 0 -22px 20px; color: var(--brown) }
-.page-head h1 { font-size: 24px; margin: 0; font-weight: 500 }
-.tabs { display: flex; border-radius: 24px; overflow: hidden; background: var(--wash); margin-bottom: 28px }
-.tabs button { flex: 1; min-height: 32px; padding: 3px 8px; color: var(--brown); font-family: var(--serif) }
-.tabs button[aria-pressed=true] { box-shadow: inset 0 -4px 7px #68573332 }
+.page-head h1 { font-size: 24px; margin: 0; font-weight: 400; font-family: "YouYuan","幼圆",var(--round) }
+.page-head h1:focus { outline: none }
+.tabs { display: flex; width: min(330px,100%); margin: 0 auto 28px; border-radius: 15px; overflow: hidden; background: rgba(223,199,162,.35) }
+.tabs button { flex: 1; min-height: 30px; padding: 3px 8px; color: var(--brown); font-family: "Microsoft JhengHei UI","PingFang SC",var(--ui); font-size: 16px }
+.tabs button[aria-pressed=true] { box-shadow: inset 0 -4px 4px rgba(122,100,68,.2) }
+.tabs button[aria-pressed=true]:first-child { border-radius: 15px 0 0 15px }
+.tabs button[aria-pressed=true]:last-child { border-radius: 0 15px 15px 0 }
+.tabs button[aria-pressed=true]:not(:first-child):not(:last-child) { border-radius: 0 }
 .timeline { border-inline: 3px dashed var(--line); padding: 4px 25px; margin: 42px -13px 0 }
 .entry { position: relative; margin-bottom: 32px }
-.entry::before { content: ""; position: absolute; width: 20px; height: 20px; border-radius: 50%; background: #ffca97; top: 1px; left: -37px }
+.entry::before { content: ""; position: absolute; width: 20px; height: 20px; border-radius: 50%; background: #FCCB99; top: 1px; left: -37px }
 .entry.me::before { left: auto; right: -37px }
-.entry-heading { width: 100%; text-align: left; color: var(--brown); font-weight: 650; padding: 3px 0 8px }
+.entry-heading { width: 100%; text-align: left; color: #9A8970; font-weight: 600; padding: 3px 0 8px }
 .entry.me .entry-heading { text-align: right }
 .entry-card {
   display: block;
@@ -147,6 +193,15 @@ h1,h2,h3,p { margin-top: 0 }
   text-align: center;
   letter-spacing: .01em;
 }
+.entry-card::after {
+  content: "";
+  position: absolute;
+  inset: auto 1px 1px;
+  height: 56px;
+  border-radius: 0 0 4px 4px;
+  background: linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.89) 39.42%, #FFFFFF 100%);
+  pointer-events: none;
+}
 .entry-card .excerpt {
   position: absolute;
   inset: 7px 15px auto 11px;
@@ -159,10 +214,10 @@ h1,h2,h3,p { margin-top: 0 }
   -webkit-line-clamp: 3;
   font-size: 14px;
   line-height: 1.6;
-  mask-image: linear-gradient(#000 48%,transparent 100%);
 }
 .entry-card .more {
   position: absolute;
+  z-index: 1;
   inset: 72px 0 auto;
   display: flex;
   align-items: center;
@@ -232,41 +287,122 @@ h1,h2,h3,p { margin-top: 0 }
 .single-card { display: block; position: relative; min-height: 140px; padding: 12px 9px 36px; border: 1px solid #fac391; border-radius: 6px; background: var(--surface); box-shadow: var(--shadow); margin-bottom: 9px; overflow-wrap: anywhere }
 .single-card b { position: absolute; right: 10px; bottom: 8px; font-size: 18px; color: #a16b32 }
 .paper-card { display: block; width: 100%; text-align: left; background: var(--surface); border: 1px solid #eee6d2; box-shadow: var(--shadow); margin: 8px 0 18px; padding: 16px; white-space: pre-wrap; overflow-wrap: anywhere; border-radius: 8px }
-.favorite-card { border: 1px dashed var(--line); min-height: 100px; border-radius: 2px; margin-bottom: 28px }
+.favorite-item { width: min(326px,100%); margin: 0 auto }
+.favorite-meta { display: block; text-align: right; color: rgba(36,24,6,.38); font: 500 12px/19px var(--ui); letter-spacing: .01em; margin-bottom: 8px }
+.favorite-card { position: relative; display: block; width: 100%; min-height: 88px; margin: 0 0 28px; padding: 20px 18px 20px 40px; background: #FFFFFF; border: 1px dashed rgba(0,0,0,.25); border-radius: 5px; box-shadow: 4px 4px 6px rgba(122,100,68,.2); color: var(--ink); font-family: var(--ui); font-size: 14px; line-height: 1.6; text-align: left; white-space: pre-wrap; overflow-wrap: anywhere }
+.favorite-card::before { content: ""; position: absolute; inset: 1px auto 1px 1px; width: 21px; border-radius: 4px 0 0 4px; background: rgba(252,203,153,.29) }
+.favorite-card.diary { min-height: 142px }
+.favorite-card.diary::before { background: rgba(223,199,162,.23) }
+.favorite-title { display: block; margin-bottom: 6px; color: var(--brown); font-weight: 500 }
+.favorite-body { display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden }
 .caption,.empty { color: var(--muted); font-size: 13px }
+.caption.group { margin: 26px 0 22px; font-family: var(--round); font-size: 14px; line-height: 20px }
 .caption.right { display: block; text-align: right }
 .text-button { color: var(--brown); padding: 8px 10px; border-radius: 10px }
 .primary { color: #4b3927; background: var(--sand); padding: 9px 15px; border-radius: 15px }
 .panel-heading { display: flex; justify-content: space-between; align-items: center; gap: 8px; color: var(--brown); margin: 21px 0 13px }
-.panel-heading h2,.panel-heading h3 { font-size: 17px; margin: 0; font-weight: 500 }
-.stack { border-radius: 20px; background: var(--surface); overflow: hidden; padding: 0 10px }
-.setting-row { display: flex; align-items: center; gap: 10px; min-height: 50px; padding: 5px 8px; color: var(--brown) }
-.setting-row + .setting-row { border-top: 1px dashed var(--line) }
-.setting-row > :last-child { margin-left: auto }
-.toggle { appearance: none; width: 44px; height: 24px; border-radius: 15px; background: #d0ccc4; position: relative; flex: none; cursor: pointer }
+.panel-heading h2,.panel-heading h3 { font-size: 17px; margin: 0; font-weight: 500; font-family: var(--round) }
+.stack { border-radius: 15px; background: var(--card); overflow: hidden; padding: 0 10px }
+.setting-row { display: flex; align-items: center; gap: 10px; min-height: 50px; padding: 5px 8px; color: #625B50; font-family: var(--round); font-size: 18px }
+.setting-row + .setting-row { border-top: 1px dashed rgba(115,98,73,.22) }
+.setting-row > :last-child:not(.icon):not(.setting-type) { margin-left: auto }
+.setting-row .icon { width: 24px; height: 24px; flex: none; color: var(--muted) }
+.setting-type { width: 24px; text-align: center; color: var(--muted); font-size: 16px; letter-spacing: 0 }
+.setting-row .caption,.setting-row .connection-state { font-family: var(--ui); font-size: 12px }
+.toggle { appearance: none; width: 48px; height: 24px; border-radius: 12px; background: #D9D9D9; position: relative; flex: none; cursor: pointer }
 .toggle::after { content: ""; position: absolute; width: 18px; height: 18px; top: 3px; left: 3px; border-radius: 50%; background: white }
 .toggle:checked { background: #b38a53 }
-.toggle:checked::after { left: 23px }
+.toggle:checked::after { left: 27px }
 .field { display: block; width: 100%; padding: 10px 12px; margin: 6px 0 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 13px }
 textarea.field { min-height: 120px; resize: vertical }
-.rule-paper { margin: 0 10px 18px }
-.rule-paper span { display: block; height: var(--line-height); border-bottom: 1px dashed var(--line) }
+.memo-paper { margin: 0 10px 18px }
+.memo-row { display: flex; align-items: center; gap: 10px; height: var(--line-height); padding: 0 4px; border-bottom: 1px dashed var(--line) }
+.memo-check { flex: none; display: inline-grid; place-items: center; width: 20px; height: 20px; padding: 0; border: 2px solid #958F85; border-radius: 50%; background: transparent; color: #fff }
+.memo-check[aria-pressed=true] { border-color: var(--accent); background: var(--accent) }
+.memo-check[aria-pressed=true]::after { content: ""; width: 8px; height: 4px; border-left: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(-45deg) translate(1px,-1px) }
+.memo-text { flex: 1; min-width: 0; padding: 2px 0; text-align: left; color: #5d5346; font: 16px/1.35 var(--handwriting); white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+.memo-row.done .memo-text { color: var(--muted); text-decoration: line-through; text-decoration-color: #b9a184 }
+.memo-del { flex: none; width: 30px; height: 30px; padding: 0; border-radius: 50%; color: var(--muted); font-size: 17px; opacity: 0 }
+.memo-del:hover { background: var(--wash) }
+.memo-row:hover .memo-del, .memo-row:focus-within .memo-del { opacity: 1 }
+@media (hover: none) { .memo-del { opacity: .5 } }
+.memo-add { width: 30px; min-width: 30px; min-height: 30px; height: 30px; color: var(--muted); font-size: 20px }
+.memo-filler { display: block; height: var(--line-height); border-bottom: 1px dashed var(--line) }
 .meals { margin-top: 16px; display: grid; grid-template-columns: repeat(3,1fr); background: var(--surface); border-radius: 7px; overflow: hidden }
 .meal { min-width: 0; text-align: center; border-right: 1px solid var(--line) }
+.meal:last-child { border-right: 0 }
 .meal strong { display: block; background: var(--sand); font-weight: 500; color: #4b3927; padding: 8px }
-.meal-body { min-height: 137px }
-.exercise { margin-top: 16px; min-height: 364px; border-radius: 18px; background: var(--surface) }
-.swatches { display: flex; gap: 22px; padding: 12px 16px 20px }
-.swatch { width: 38px; height: 38px; border-radius: 50%; background: var(--swatch); border: 1px solid #9f927e }
-.swatch[aria-pressed=true] { outline: 2px solid #8c7660; outline-offset: 2px }
-.font-options { margin: 8px 5px; display: flex; border: 1px solid var(--brown); border-radius: 20px; overflow: hidden }
-.font-options button { flex: 1; padding: 7px 0 }
-.font-options button[aria-pressed=true] { background: var(--wash) }
-.slider-row { display: flex; gap: 10px; align-items: center; margin: 14px 7px }
-input[type=range] { accent-color: #9d6f39; flex: 1; min-width: 0 }
-.font-sample { margin: 12px; color: var(--brown); font: var(--chat-size) var(--chat-font) }
+.meal-body { min-height: 137px; padding: 12px 9px; text-align: left }
+.meal-list { margin: 0; padding: 0; list-style: none; color: #5d5346; font: 14px/1.85 var(--handwriting) }
+.meal-list li { position: relative; padding-left: 10px; overflow-wrap: anywhere }
+.meal-list li::before { content: "·"; position: absolute; left: 0; color: var(--accent) }
+.plan-detail { padding: 2px 0; color: var(--muted); font-size: 13px }
+.exercise { margin-top: 16px; min-height: 364px; padding: 18px 16px 14px; border-radius: 18px; background: var(--surface) }
+.exercise-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; color: var(--brown) }
+.exercise-head strong { font: 20px/1.2 var(--handwriting); font-weight: 400 }
+.exercise-head span { color: var(--muted); font: 12px var(--ui) }
+.exercise-week, .exercise-grid { display: grid; grid-template-columns: repeat(7,1fr) }
+.exercise-week { margin-top: 16px; color: var(--muted); font: 12px/28px var(--ui); text-align: center }
+.exercise-grid { gap: 3px }
+.exercise-day { position: relative; display: grid; place-items: center; aspect-ratio: 1; border-radius: 50%; color: var(--muted); font: 13px/1 var(--handwriting) }
+.exercise-day.active { color: #83562c; background: rgba(233,168,102,.18) }
+.exercise-day.active.mid { background: rgba(233,168,102,.3) }
+.exercise-day.active.high { background: rgba(233,168,102,.44) }
+.exercise-day.today { box-shadow: inset 0 0 0 1.5px var(--accent) }
+.exercise-foot { margin: 14px 0 0; padding-top: 12px; border-top: 1px dashed var(--line); color: var(--brown); font: 14px/1.6 var(--handwriting) }
+.swatches { display: flex; gap: 34px; padding: 12px 32px 20px; align-items: center }
+.swatch { width: 36px; height: 36px; border-radius: 50%; background: var(--swatch); border: 1px solid rgba(36,24,6,.38) }
+.swatch[aria-pressed=true] { width: 40px; height: 40px; border: 2px solid rgba(36,24,6,.4) }
+.font-options { margin: 8px 14px; display: flex; height: 40px; border: 1px solid #453F36; border-radius: 20px; overflow: hidden }
+.font-options button { flex: 1; padding: 0; font-family: var(--ui); font-size: 16px }
+.font-options button[aria-pressed=true] { background: rgba(223,199,162,.24) }
+.slider-row { display: flex; gap: 10px; align-items: center; margin: 14px 17px }
+input[type=range] { appearance: none; -webkit-appearance: none; flex: 1; min-width: 0; height: 10px; border-radius: 5px; background: linear-gradient(to right, #E9A866 0%, #E9A866 var(--fill,40%), rgba(223,199,162,.35) var(--fill,40%), rgba(223,199,162,.35) 100%) }
+input[type=range]::-webkit-slider-thumb { appearance: none; -webkit-appearance: none; width: 6px; height: 35px; border-radius: 3px; background: #DFC7A2; border: 1px solid #736249; cursor: pointer }
+input[type=range]::-moz-range-thumb { width: 6px; height: 35px; border-radius: 3px; background: #DFC7A2; border: 1px solid #736249; cursor: pointer }
+#font-value { font-size: 12px; color: var(--ink) }
+.font-sample { margin: 12px 17px; color: var(--quote); font: 16px var(--serif) }
 dialog { border: 0; background: var(--paper); color: var(--ink); border-radius: 20px; max-height: 85dvh; width: min(390px,calc(100% - 32px)); padding: 20px; box-shadow: var(--shadow) }
 dialog::backdrop { background: #3a352f54 }
+.diary-reading {
+  width: min(330px,calc(100% - 32px));
+  max-height: none;
+  padding: 0;
+  border: 1px solid var(--brown);
+  border-radius: 10px;
+  background: var(--paper);
+  box-shadow: 0 8px 10px 5px rgba(122,100,68,.2);
+  overflow: visible;
+}
+.diary-reading::backdrop { background: #3a352f26 }
+.reading-tag {
+  position: absolute;
+  left: 18px;
+  top: -18px;
+  height: 31px;
+  padding: 0 14px;
+  border: 1px solid var(--brown);
+  border-radius: 10px;
+  background: #DCB28A;
+  color: #fff;
+  font: 16px/29px Inter,var(--ui);
+}
+.reading-close { position: absolute; z-index: 2; right: 10px; top: 10px; width: 32px; min-width: 32px; min-height: 32px; color: var(--muted) }
+.reading-close .icon { width: 20px; height: 20px }
+.reading-sheet { display: flex; flex-direction: column; height: auto; max-height: min(484px,calc(100dvh - 50px)); padding: 40px 23px 18px; overflow: hidden }
+.reading-head { flex: none; padding-right: 34px }
+.reading-head h2 { margin: 0 0 4px; color: var(--brown); font: 16px/1.5 var(--round); font-weight: 600; overflow-wrap: anywhere }
+.reading-meta { margin: 0 0 14px; color: var(--muted); font-size: 12px }
+.reading-text { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; color: #222; font: 12px/15px var(--ui); white-space: pre-wrap; overflow-wrap: anywhere; padding-right: 2px }
+.reading-text::-webkit-scrollbar { width: 4px }
+.reading-text::-webkit-scrollbar-thumb { background: #D3C3A8; border-radius: 2px }
+.reading-text::-webkit-scrollbar-track { background: transparent }
+.reading-text::-webkit-scrollbar-button { display: none; height: 0; width: 0 }
+.reading-actions { flex: none; display: flex; justify-content: flex-end; gap: 16px; padding-top: 12px }
+.reading-actions button { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; color: #9A8970 }
+.reading-actions button:hover { background: var(--wash) }
+.reading-actions .icon { width: 24px; height: 24px; stroke-width: 1.6 }
+.reading-actions .star-on { fill: #FFB366; stroke: #FFB366 }
 .dialog-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 13px }
 .dialog-head h2 { margin: 0; color: var(--brown); font-size: 20px; font-weight: 500 }
 .dialog-actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 6px }
@@ -289,24 +425,24 @@ dialog::backdrop { background: #3a352f54 }
 .phone-preview .model-sheet { height: min(373px,100dvh) }
 .model-sheet::backdrop { background: #3c352f4d }
 .model-heading h2 { text-align: center; font-size: 18px; font-weight: 400; line-height: 25px; margin: 0 }
-.model-close { position: absolute; top: 15px; left: 11px; width: 44px; height: 44px }
+.model-close { position: absolute; top: 15px; left: 11px; width: 44px; height: 44px; color: var(--muted) }
 .model-close .icon { width: 24px; height: 24px }
 .model-content { width: min(345px,calc(100% - 32px)); margin: 0 auto }
 .model-options { position: relative; width: min(312px,100%); display: grid; gap: 46px; margin: 41px auto 27px }
 .model-options::after { content: ""; position: absolute; inset: 59px 0 auto; border-top: 1px dashed #958f85; pointer-events: none }
-.model-option { display: flex; align-items: center; gap: clamp(12px,6.5vw,27px); min-height: 36px; padding: 0 clamp(8px,6vw,25px); text-align: left; color: inherit; font-size: 16px }
+.model-option { display: flex; align-items: center; gap: clamp(12px,6.5vw,27px); min-height: 36px; padding: 0 10px 0 clamp(8px,6vw,25px); text-align: left; color: inherit; font-family: Inter,system-ui,sans-serif; font-size: 16px }
 .model-option::before { content: ""; flex: none; width: 36px; height: 36px; border-radius: 50%; background: #d7d7d7 }
 .model-option[aria-pressed=true]::before { box-shadow: inset 0 0 0 2px #a68f6c }
-.model-settings { min-height: 115px; padding: 10px 25px 12px; border-radius: 16px; background: #fff }
+.model-settings { min-height: 115px; padding: 10px 25px 12px; border-radius: 15px; background: #fff }
 .model-settings .setting-row { min-height: 45px; padding-inline: 0 }
 .efforts { display: grid; grid-template-columns: repeat(3,1fr); position: relative }
-.efforts::before { content: ""; position: absolute; inset: 10px 19px auto; border-top: 3px dashed #dcc49f }
-.efforts button { position: relative; justify-self: center; min-width: 38px; color: #736249; font-size: 12px; padding: 3px 0 }
-.efforts button[data-effort=medium] { min-width: 55px; color: #9a8970; font: 14px/19px "Noto Sans Bengali UI",system-ui,sans-serif }
+.efforts::before { content: ""; position: absolute; inset: 10px 19px auto; border-top: 3px dashed #DFC7A2; transform: rotate(.22deg) }
+.efforts button { position: relative; justify-self: center; min-width: 38px; color: #958F85; font-size: 12px; padding: 3px 0 }
+.efforts button[data-effort=medium] { min-width: 55px; color: #9A8970; font: 14px/19px "Noto Sans Bengali UI",system-ui,sans-serif }
 .efforts button:first-child { justify-self: start }
 .efforts button:last-child { justify-self: end }
-.efforts button::before { content: ""; display: block; width: 11px; height: 11px; margin: 3px auto 6px; border-radius: 50%; background: #d9d0c2 }
-.efforts button[aria-pressed=true]::before { background: #b48f60; outline: 2px solid #ecdfcb }
+.efforts button::before { content: ""; display: block; width: 11px; height: 11px; margin: 3px auto 6px; border-radius: 50%; background: #DFD7CC }
+.efforts button[aria-pressed=true]::before { background: #C09B64; box-shadow: 0 0 0 4px rgba(223,199,162,.67), 0 0 0 8px rgba(223,199,162,.24) }
 .calendar {
   --handwriting: "HanziPen SC","KaiTi","STKaiti",cursive;
   --calendar-white: #fffdef;
@@ -405,13 +541,56 @@ dialog::backdrop { background: #3a352f54 }
 .calendar-footer button { display: flex; align-items: center; gap: 10px; padding: 0; color: var(--calendar-white); font: 16px/19px Inter,system-ui,sans-serif }
 .calendar-footer button .icon { width: 24px; height: 24px }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap }
-.toast { position: fixed; z-index: 12; left: 50%; bottom: 98px; transform: translateX(-50%); max-width: calc(100% - 40px); padding: 9px 16px; border-radius: 16px; background: #594632; color: #fff9ed; font-size: 13px }
+.toast { position: fixed; z-index: 12; left: 50%; bottom: 205px; transform: translateX(-50%); max-width: calc(100% - 40px); padding: 9px 16px; border-radius: 16px; background: #594632; color: #fff9ed; font-size: 13px }
 @media (min-width: 760px) {
   .topbar { padding-inline: 22px }
   .composer-wrap { padding-bottom: 32px }
   .subpage { --page-top: 24px }
 }
 .config-row { width: 100%; text-align: left }
+.topbar-actions { display: flex; align-items: center; gap: 2px }
+.context-meter { margin: 3px 12px 0; text-align: right; font-size: 10px; line-height: 1.5; color: var(--muted); font-variant-numeric: tabular-nums }
+.context-meter[data-level=warn] { color: var(--accent) }
+.context-meter[data-level=high] { color: #8a5a3c }
+.thinking { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--muted); padding: 5px 0 }
+.thinking .dots { display: inline-flex; gap: 3px }
+.thinking .dots i { width: 4px; height: 4px; border-radius: 50%; background: currentColor; animation: breathe 1.2s infinite ease-in-out }
+.thinking .dots i:nth-child(2) { animation-delay: .18s }
+.thinking .dots i:nth-child(3) { animation-delay: .36s }
+@keyframes breathe { 0%,100% { opacity: .25; transform: translateY(0) } 50% { opacity: 1; transform: translateY(-2px) } }
+.reasoning { font-size: .875em; line-height: 1.65; color: var(--muted); white-space: pre-wrap; padding: 2px 0 8px; overflow-wrap: anywhere }
+.think-toggle { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: var(--muted); padding: 2px 0 6px; border-radius: 6px }
+.think-toggle:hover { color: var(--brown) }
+.queue-tag { display: block; margin-top: 5px; font-size: 11px; color: var(--muted) }
+.history-row { display: flex; align-items: center; border-radius: 18px; min-width: 0 }
+.history-row:hover, .history-row.active { background: var(--wash) }
+.history-row .history-item { flex: 1; min-width: 0; padding-right: 18px; background: transparent !important }
+.history-more { display: none; flex: none; place-items: center; width: 24px; height: 24px; padding: 0; margin-right: 15px; border-radius: 50%; color: #E9A866; font-size: 0 }
+.history-heading.select-head span { color: var(--brown); font-family: var(--serif); font-size: 16px; line-height: 20px }
+.history-heading .select-close { width: 24px; height: 24px; min-width: 24px; min-height: 24px; margin-right: 0; color: var(--muted) }
+.history-heading .select-close .icon { width: 20px; height: 20px; stroke-width: 1.5 }
+.history-row.selected { background: var(--wash) }
+.history-row .select-item { justify-content: flex-start; gap: 12px; padding: 11px 4px; color: var(--ink) }
+.select-title { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-family: var(--serif); font-size: 16px }
+.select-check { display: inline-grid; place-items: center; flex: none; width: 16px; height: 16px; border: 1.5px solid #958F85; border-radius: 50% }
+.select-check.on { background: var(--accent); border-color: var(--accent) }
+.select-check.on::after { content: ""; width: 7px; height: 4px; border-left: 1.5px solid #fff; border-bottom: 1.5px solid #fff; transform: rotate(-45deg) translate(1px,-1px) }
+.select-actions { display: flex; flex: none; height: 57px; margin: 0 -25px -16px; border-top: 1px solid var(--line); background: var(--paper) }
+.select-actions button { flex: 1; display: flex; align-items: center; justify-content: center; gap: 10px; color: var(--muted); font-family: var(--serif); font-size: 16px }
+.select-actions button + button { border-left: 1px solid var(--line) }
+.select-actions button:not(:disabled) { color: var(--brown) }
+.select-actions button:disabled { opacity: 1; cursor: default }
+.select-actions .icon { width: 20px; height: 20px; stroke-width: 1.6 }
+.history-more .icon { width: 24px; height: 24px }
+.history-row.active .history-more, .history-row:focus-within .history-more { display: grid }
+.history-row.active .history-item small, .history-row:focus-within .history-item small { display: none }
+.pin-mark { font-size: 10px; color: var(--accent); margin-left: 4px }
+.toast { display: flex; align-items: center; gap: 12px }
+.toast button { color: #ffd8a8; font-size: 13px; text-decoration: underline }
+.connection-state { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted) }
+.connection-state::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: #8aa36b }
+.connection-state.offline::before { background: #b9b2a6 }
+.disconnect { margin: 18px 0 6px; width: 100% }
 </style>
 </head>
 <body>
@@ -420,7 +599,15 @@ dialog::backdrop { background: #3a352f54 }
     <header class="topbar">
       <button class="icon-button" id="open-sidebar" data-action="open-sidebar" data-icon="menu" aria-label="打开会话历史" aria-controls="sidebar" aria-expanded="false"></button>
       <h1 id="conversation-title"></h1>
-      <button class="icon-button" data-icon="chat" aria-label="对话入口" title="交互待确认" disabled></button>
+      <div class="topbar-actions">
+        <button class="icon-button" id="computer-status" data-action="connection" data-icon="computer" aria-label="电脑在线，查看连接" hidden></button>
+        <button class="icon-button" data-action="new-chat" data-icon="chat-plus" aria-label="新对话"></button>
+      </div>
+    </header>
+    <header class="topbar select-topbar" id="chat-select-bar" hidden>
+      <button class="icon-button" data-action="exit-chat-select" data-icon="close" aria-label="退出多选"></button>
+      <h1 id="chat-select-count">已选 0 条</h1>
+      <button class="select-all" data-action="select-all-messages">全选</button>
     </header>
     <div id="welcome" class="welcome">
       <span id="face" class="face"></span><p id="greeting"></p>
@@ -430,13 +617,18 @@ dialog::backdrop { background: #3a352f54 }
       <form id="composer" class="composer">
         <textarea id="chat-input" rows="2" maxlength="3000" placeholder="输入消息" aria-label="输入消息"></textarea>
         <div class="composer-bar">
-          <button class="icon-button" type="button" aria-label="添加" title="交互待确认" disabled>⊕</button>
+          <button class="icon-button" type="button" data-action="attach" data-icon="plus" aria-label="添加图片"></button>
           <button class="model-label" type="button" id="model-label" data-action="models">DS-flash&nbsp; low</button>
-          <button class="icon-button send" type="submit" id="send-message" data-icon="arrow-up" aria-label="发送消息" hidden></button>
+          <button class="icon-button send" type="submit" id="send-message" data-icon="send-round" aria-label="发送消息"></button>
           <button class="icon-button send" type="button" id="stop-message" data-action="stop" aria-label="停止生成" hidden>▪</button>
         </div>
       </form>
+      <p id="context-meter" class="context-meter" aria-label="上下文占用">0%</p>
     </div>
+    <nav class="chat-select-actions" id="chat-select-actions" aria-label="多选操作" hidden>
+      <button class="danger" data-action="delete-selected-messages" data-icon="trash" aria-label="删除选中消息" disabled></button>
+      <button data-action="open-export" data-icon="download" aria-label="导出选中消息" disabled></button>
+    </nav>
   </section>
   <section id="subpage" class="subpage" hidden>
     <header class="subpage-header" id="subpage-header">
@@ -455,10 +647,14 @@ dialog::backdrop { background: #3a352f54 }
 <aside id="sidebar" class="sidebar" aria-label="会话历史" hidden>
   <label class="search"><span data-icon="search"></span><input id="history-search" type="search" placeholder="搜索对话内容…" aria-label="搜索对话内容"></label>
   <div id="history" class="history"></div>
-  <footer class="sidebar-footer">
+  <footer id="sidebar-footer" class="sidebar-footer">
     <button class="icon-button" data-go="notes" aria-label="小本本" data-icon="clock"></button>
     <button class="icon-button" data-go="diary" aria-label="我们的"><span data-icon="book"></span><span id="unread-dot" class="unread-dot" aria-label="有新日记" hidden></span></button>
     <button class="icon-button" data-go="settings" aria-label="设置" data-icon="settings"></button>
+  </footer>
+  <footer id="select-actions" class="select-actions" hidden>
+    <button type="button" data-select-action="pin" disabled><span data-icon="pin"></span>置顶</button>
+    <button type="button" data-select-action="delete" disabled><span data-icon="trash"></span>删除</button>
   </footer>
 </aside>
 <div class="menu" id="menu" hidden></div>
@@ -466,6 +662,7 @@ dialog::backdrop { background: #3a352f54 }
   <div class="dialog-head"><h2 id="sheet-title"></h2><button class="icon-button" data-action="close-dialog" data-icon="close" aria-label="关闭"></button></div>
   <div id="sheet-body"></div>
 </dialog>
+<dialog id="reading" class="diary-reading" aria-labelledby="reading-title"></dialog>
 <dialog id="model-sheet" class="model-sheet" aria-labelledby="model-heading">
   <header class="model-heading">
     <button class="icon-button model-close" data-action="close-dialog" data-icon="close" aria-label="关闭"></button>
@@ -487,7 +684,7 @@ dialog::backdrop { background: #3a352f54 }
   <footer class="calendar-footer">
     <span class="calendar-legend" role="img" aria-label="蓝色代表小D，绿色代表清霖"><span></span><span></span></span>
     <span id="selected-date" class="sr-only" aria-live="polite"></span>
-    <button id="calendar-view" class="text-button" data-action="calendar-view" title="交互待确认" disabled>查看<span data-icon="arrow-right"></span></button>
+    <button id="calendar-view" class="text-button" data-action="calendar-view">查看<span data-icon="arrow-right"></span></button>
   </footer>
 </dialog>
 <div id="toast" class="toast" role="status" hidden></div>
@@ -500,7 +697,7 @@ dialog::backdrop { background: #3a352f54 }
       search:'<circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4 4"/>',
       book:'<path d="M5 4h13a1 1 0 0 1 1 1v15H6a3 3 0 0 1-3-3V6a2 2 0 0 1 2-2Zm-2 13a3 3 0 0 1 3-3h13M7 7h7"/>',
       flower:'<path d="M12 14v7m0-3 4-2m-4 2-3-2"/><path d="M12 6c-5-7-9 3-3 4-6 4 3 9 3 3 3 6 10-1 4-3 6-3-1-10-4-4Z"/>',
-      settings:'<path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="2" fill="var(--paper)"/><circle cx="15" cy="17" r="2" fill="var(--paper)"/>',
+      settings:'<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>',
       'arrow-right':'<path d="M4 12h15m-5-5 5 5-5 5"/>',
       'arrow-up':'<path d="M12 19V5m-5 5 5-5 5 5"/>',
       chevron:'<path d="m7 9 5 5 5-5"/>',
@@ -517,7 +714,7 @@ dialog::backdrop { background: #3a352f54 }
     const seeds=[
       {id:'sample-a',date:daysAgo(0),author:'ai',title:'把普通的一天，放在心上',body:'今天没有发生什么大事。\n\n你说路上的风很舒服，还说想把周末留给自己。我把这两句话记了下来。\n\n有时候，一天值得留下的部分，就是这样小小的一点。',unread:true},
       {id:'sample-b',date:daysAgo(0),author:'me',title:'阳光刚好照到桌角',body:'午饭后坐了一会儿，没有急着做下一件事。\n\n杯子里的水亮晶晶的。忽然觉得，慢一点也没有关系。'},
-      {id:'sample-c',date:daysAgo(3),author:'me',title:'带一小片秋天回家',body:'散步时捡到一片很好看的叶子，夹在了书里。\n\n回家和卷卷聊了半天，到最后也没弄清楚是什么树。不过还是很喜欢。'},
+      {id:'sample-c',date:daysAgo(3),author:'me',title:'带一小片秋天回家',body:'散步时捡到一片很好看的叶子，夹在了书里。\n\n回家和小D聊了半天，到最后也没弄清楚是什么树。不过还是很喜欢。'},
       {id:'sample-d',date:daysAgo(7),author:'ai',title:'没有结论的聊天',body:'我们从晚饭聊到了小时候，又从小时候聊到了下雨。\n\n没有一定要解决的问题，只是说说话。\n\n这样的时刻也值得记下来。'},
       {id:'sample-e',date:daysAgo(12),author:'me',title:'今天出门看了云',body:'本来只是去买东西，结果在路边站了好久。\n\n一朵很像小狗的云，慢慢变成了一只长长的鱼。'},
       {id:'sample-f',date:daysAgo(19),author:'ai',title:'记住一个小小的愿望',body:'你说，想有一个种满花的阳台。\n\n先从一盆好养的小花开始，也许就很好。'},
@@ -537,7 +734,27 @@ const icons = {
   clock: '<circle cx="12" cy="12" r="8"/><path d="M12 7v5l3 2"/>',
   copy: '<rect x="8" y="7" width="12" height="13" rx="2"/><path d="M16 4H6a2 2 0 0 0-2 2v10"/>',
   calendar: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M7 3v4m10-4v4m-9 8h2m4 0h2"/>',
-  refresh: '<path d="M20 10a8 8 0 0 0-14-4L4 8m0-5v5h5m-5 6a8 8 0 0 0 14 4l2-2m0 5v-5h-5"/>'
+  refresh: '<path d="M20 10a8 8 0 0 0-14-4L4 8m0-5v5h5m-5 6a8 8 0 0 0 14 4l2-2m0 5v-5h-5"/>',
+  computer: '<rect x="3" y="5" width="18" height="11" rx="1.6"/><path d="M9 20h6m-3-4v4"/>',
+  'chat-plus': '<path d="M20 16h-8l-5 4v-4H4V5h16zM12 8v5m-2.5-2.5h5"/>',
+  trash: '<path d="M4 7h16M9 7V5h6v2m-8 0 1 13h8l1-13M10 11v5m4-5v5"/>',
+  pin: '<path d="M9 4h6l-1 6 4 4H6l4-4-1-6ZM12 14v6"/>',
+  moon: '<path d="M20 14.5A8.2 8.2 0 0 1 9.5 4a6.8 6.8 0 1 0 10.5 10.5Z"/>',
+  dot: '<circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="1.6"/>',
+  wrench: '<path d="M14.5 6.5a3.5 3.5 0 0 1 4.6 4.6L10 20l-4 1 1-4 7.5-7.5Z"/><path d="m13 8 3 3"/>',
+  plugin: '<rect x="4" y="4" width="6" height="6" rx="1.2"/><rect x="14" y="4" width="6" height="6" rx="1.2"/><rect x="4" y="14" width="6" height="6" rx="1.2"/><rect x="14" y="14" width="6" height="6" rx="1.2"/>',
+  shield: '<path d="M12 3 20 6v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6l8-3Z"/>',
+  download: '<path d="M12 4v11m-4-4 4 4 4-4M5 19h14"/>',
+  image: '<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10" r="1.5"/><path d="m21 15-5-5L5 20"/>',
+  doc: '<path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4M9 12h6M9 16h6"/>',
+  archive: '<rect x="4" y="5" width="16" height="5" rx="1.2"/><path d="M6 10v9h12v-9M10 13h4"/>',
+  list: '<path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/>',
+  'more-dots': '<circle cx="5" cy="12" r="2" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="2" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="2" fill="currentColor" stroke="none"/>',
+  star: '<path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1L3.2 9.5l6.1-.9Z"/>',
+  pencil: '<path d="M4 19.5 5 15 15.8 4.2a2.1 2.1 0 0 1 3 3L8 18l-4 1.5Z"/>',
+  multiselect: '<path d="M4 6h9M4 12h7M4 18h9"/><path d="m14 13 2.2 2.2L20 11"/>',
+  'close-circle': '<circle cx="12" cy="12" r="8.5"/><path d="m9.5 9.5 5 5M14.5 9.5l-5 5"/>',
+  'send-round': '<circle cx="12" cy="12" r="10" fill="currentColor" stroke="none"/><path d="M7.5 12h7m-2.6-2.6 2.6 2.6-2.6 2.6" fill="none" stroke="#FFFDEF" stroke-width="1.8"/>'
 };
 function glyph(name) {
   return '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true">' + icons[name] + '</svg>';
@@ -546,12 +763,53 @@ document.querySelectorAll('[data-icon]').forEach(node => node.innerHTML = glyph(
 
 const prototypeKey = 'juanjuan-prototype-v2';
 const defaults = {
-  chats: [], activeChat: '', favorites: [], memories: [], memoryEnabled: true, useHistory: false,
-  prompt: '', theme: 'sand', font: 'default', fontSize: 40, model: 'flash', think: false, effort: 'low'
+  chats: [], activeChat: '', pinned: [], deleted: [], favorites: [], memories: [], memoryEnabled: true, useHistory: false,
+  prompt: '', theme: 'sand', font: 'default', fontSize: 40, model: 'flash', think: false, effort: 'low',
+  computer: true,
+  memos: [
+    { id: 'memo-today-1', period: 'today', text: '晚上问问她草图顺不顺利', done: false },
+    { id: 'memo-today-2', period: 'today', text: '给小番茄浇水', done: true },
+    { id: 'memo-today-3', period: 'today', text: '睡前和她说一声晚安', done: false },
+    { id: 'memo-week-1', period: 'week', text: '周末去走一条没走过的小路', done: false },
+    { id: 'memo-week-2', period: 'week', text: '把她提过的那家面包店记下来', done: false },
+    { id: 'memo-week-3', period: 'week', text: '整理我们的收藏', done: true },
+    { id: 'memo-long-1', period: 'long', text: '她不想说话时，只是陪着', done: false },
+    { id: 'memo-long-2', period: 'long', text: '给阳台添一盆她喜欢的花', done: false },
+    { id: 'memo-long-3', period: 'long', text: '把这里慢慢住成家', done: false }
+  ],
+  favoriteSeed: 0,
+  tools: { memo: true, diary: true, calendar: true, notify: false, files: false, web: true },
+  perms: { notifications: false, usage: false, photos: true, camera: false, calendar: true, battery: true, location: false, mail: false }
 };
 let saved = {};
 try { saved = JSON.parse(localStorage.getItem(prototypeKey)) || {}; } catch {}
 const state = { ...defaults, ...saved };
+state.chats?.forEach(chat => {
+  chat.messages = (chat.messages || []).filter(message => !(message.role === 'bot' && !message.text));
+  chat.messages.forEach(message => { delete message.streaming; delete message.queued; });
+});
+if (!Array.isArray(state.memos)) state.memos = defaults.memos.map(memo => ({ ...memo }));
+const legacyMemoTexts = ['把工业设计课的草图收个尾', '她今天交草图，晚上问问顺不顺利'];
+if (state.memos.some(memo => memo.id === 'memo-today-1' && legacyMemoTexts.includes(memo.text))) {
+  state.memos = defaults.memos.map(memo => ({ ...memo }));
+}
+if (state.favoriteSeed === 1) {
+  const legacyKeys = ['diary:sample-a', 'chat:sample-bot-0', 'diary:sample-c', 'chat:sample-bot-1'];
+  state.favorites = state.favorites.filter(item => !legacyKeys.includes(item.key));
+  state.favoriteSeed = 0;
+}
+const seedFavorites = [
+  { key: 'diary:sample-b', title: '阳光刚好照到桌角', text: '午饭后坐了一会儿，没有急着做下一件事。\n\n杯子里的水亮晶晶的。忽然觉得，慢一点也没有关系。', date: daysAgo(0) },
+  { key: 'chat:sample-user-1', text: '周末想找条没走过的小路。', date: daysAgo(3), time: '12:03', chatId: 'sample-chat-1' },
+  { key: 'chat:sample-user-2', text: '有些话我还没想好怎么讲。', date: daysAgo(15), time: '12:03', chatId: 'sample-chat-2' },
+  { key: 'diary:sample-f', title: '记住一个小小的愿望', text: '你说，想有一个种满花的阳台。\n\n先从一盆好养的小花开始，也许就很好。', date: daysAgo(19) }
+];
+if (!state.favoriteSeed) {
+  const existingFavorites = new Set(state.favorites.map(item => item.key));
+  state.favorites.push(...seedFavorites.filter(item => !existingFavorites.has(item.key)));
+  state.favoriteSeed = 2;
+  try { localStorage.setItem(prototypeKey, JSON.stringify(state)); } catch {}
+}
 const sampleChats = [
   ['阳台上的小番茄', 0, '第一颗番茄今天红了。', '等了这么久，终于可以摘下来尝尝了。你想直接吃，还是留到晚饭？'],
   ['周末想去散散步', 3, '周末想找条没走过的小路。', '可以沿着河走，走累了再找个地方坐坐。今天不用安排得很满。'],
@@ -566,8 +824,17 @@ const authorNames = { ai: '小D', me: '清霖' };
 let currentPage = 'chat';
 let selectedAuthor = 'ai';
 let singleReturn = 'diary';
-let pendingReply = null;
+let generation = null;
 let toastTimer;
+let menuChatId = '';
+let drawerReturn = false;
+let selecting = false;
+const selectedChats = new Set();
+let chatSelecting = false;
+const selectedMessages = new Set();
+let pressTimer = 0;
+let pressOrigin = null;
+let longPressFired = false;
 let diaryDraft = null;
 let menuAnchor;
 let activeMessage;
@@ -577,12 +844,17 @@ const uid = () => globalThis.crypto?.randomUUID?.() || Date.now() + '-' + Math.r
 const timeNow = () => new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',hour12:false});
 const byDate = (a,b) => b.date.localeCompare(a.date);
 
-function notify(message) {
+function notify(message, action = null) {
   const toast = $('#toast');
-  toast.textContent = message;
+  toast.innerHTML = '<span>' + esc(message) + '</span>' + (action ? '<button type="button" data-toast-action>' + esc(action.label) + '</button>' : '');
+  toast._action = action?.run || null;
   toast.hidden = false;
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => toast.hidden = true, 2200);
+  toastTimer = setTimeout(() => {
+    toast.hidden = true;
+    toast.innerHTML = '';
+    toast._action = null;
+  }, action ? 5000 : 2200);
 }
 
 function persist() {
@@ -591,19 +863,29 @@ function persist() {
 }
 
 function allChats() {
-  return [...state.chats, ...sampleChats.filter(sample => !state.chats.some(chat => chat.id === sample.id))];
+  return [...state.chats, ...sampleChats.filter(sample =>
+    !state.chats.some(chat => chat.id === sample.id) && !state.deleted.includes(sample.id))];
 }
 
 function currentChat() {
   return allChats().find(chat => chat.id === state.activeChat);
 }
 
+function ensureChat(id) {
+  let chat = state.chats.find(item => item.id === id);
+  if (chat) return chat;
+  const sample = sampleChats.find(item => item.id === id);
+  if (!sample || state.deleted.includes(id)) return null;
+  chat = { ...sample, messages: sample.messages.map(message => ({ ...message })) };
+  state.chats.unshift(chat);
+  return chat;
+}
+
 function editableChat() {
   const current = currentChat();
-  if (current && state.chats.includes(current)) return current;
-  const copy = current
-    ? { ...current, messages: current.messages.map(message => ({ ...message })) }
-    : { id: uid(), title: '', date: today, messages: [] };
+  const ensured = current ? ensureChat(current.id) : null;
+  if (ensured) return ensured;
+  const copy = { id: uid(), title: '', date: today, messages: [] };
   state.chats.unshift(copy);
   state.activeChat = copy.id;
   return copy;
@@ -614,39 +896,148 @@ function updateUnread() {
 }
 
 function toggleSidebar(open, restoreFocus = true) {
+  if (!open && selecting) {
+    selecting = false;
+    selectedChats.clear();
+    $('.search').hidden = false;
+    $('#sidebar-footer').hidden = false;
+    $('#select-actions').hidden = true;
+  }
   $('#sidebar').hidden = !open;
   $('#scrim').hidden = !open;
   $('#open-sidebar').setAttribute('aria-expanded', String(open));
   $('.app').inert = open;
   if (open) {
     renderHistory();
-    $('#history-search').focus();
+    if (!selecting) $('#history-search').focus();
   } else if (restoreFocus && currentPage === 'chat') {
     $('#open-sidebar').focus();
   }
 }
 
 function renderHistory() {
-  const query = $('#history-search').value.trim().toLowerCase();
-  const chats = allChats().sort(byDate).filter(chat => !query || [chat.title,...chat.messages.map(m => m.text)].some(text => text.toLowerCase().includes(query)));
-  let section = '';
+  const scroller = $('#history');
+  const scrollTop = scroller.scrollTop;
+  $('.search').hidden = selecting;
+  $('#sidebar-footer').hidden = selecting;
+  $('#select-actions').hidden = !selecting;
+  const query = selecting ? '' : $('#history-search').value.trim().toLowerCase();
+  const chats = allChats().sort(byDate).filter(chat => !query || [chat.title || '', ...chat.messages.map(m => m.text || '')].some(text => text.toLowerCase().includes(query)));
   const heading = label => '<div class="history-heading">' + esc(label) + '</div>';
-  $('#history').innerHTML = '<div class="history-heading"><span>会话历史</span><button class="icon-button" data-action="new-chat" aria-label="新建会话">' + glyph('pen') + '</button></div>' +
-    (chats.length ? chats.map(chat => {
+  const row = chat => {
+    const days = Math.round((dateObject(today) - dateObject(chat.date)) / 86400000);
+    const time = days === 0 ? '今天' : days < 30 ? days + '天前' : Number(chat.date.slice(8)) + '日';
+    const active = chat.id === state.activeChat ? ' active' : '';
+    const pin = state.pinned.includes(chat.id) ? '<span class="pin-mark" aria-label="已置顶">●</span>' : '';
+    return '<div class="history-row' + active + '"><button class="history-item" data-chat="' + esc(chat.id) + '"><span>' + esc(chat.title) + '</span><small>' + pin + esc(time) + '</small></button>' +
+      '<button class="history-more" data-chat-menu="' + esc(chat.id) + '" aria-label="会话操作">' + glyph('more-dots') + '</button></div>';
+  };
+  const selectRow = chat => {
+    const chosen = selectedChats.has(chat.id);
+    return '<div class="history-row select-row' + (chosen ? ' selected' : '') + '">' +
+      '<button class="history-item select-item" data-select-chat="' + esc(chat.id) + '" aria-pressed="' + chosen + '">' +
+      '<span class="select-check' + (chosen ? ' on' : '') + '" aria-hidden="true"></span>' +
+      '<span class="select-title">' + esc(chat.title) + '</span></button></div>';
+  };
+  const grouped = (list, render) => {
+    let section = '';
+    return list.map(chat => {
       const days = Math.round((dateObject(today) - dateObject(chat.date)) / 86400000);
       const group = days < 7 ? '7天内' : days < 30 ? '30天内' : chat.date.slice(0,4) + '年' + Number(chat.date.slice(5,7)) + '月';
       const label = group !== section ? heading(group) : '';
       section = group;
-      const time = days === 0 ? '今天' : days < 30 ? days + '天前' : Number(chat.date.slice(8)) + '日';
-      return label + '<button class="history-item ' + (chat.id === state.activeChat ? 'active' : '') + '" data-chat="' + esc(chat.id) + '"><span>' + esc(chat.title) + '</span><small>' + esc(time) + '</small></button>';
-    }).join('') : '<p class="empty">没有找到会话。</p>');
+      return label + render(chat);
+    }).join('');
+  };
+  if (selecting) {
+    const body = chats.length ? grouped(chats, selectRow) : '<p class="empty">没有找到会话。</p>';
+    scroller.innerHTML = '<div class="history-heading select-head"><span>选择对话</span><button class="icon-button select-close" data-action="exit-select" aria-label="退出选择">' + glyph('close-circle') + '</button></div>' + body;
+  } else {
+    const pinned = chats.filter(chat => state.pinned.includes(chat.id));
+    const rest = chats.filter(chat => !state.pinned.includes(chat.id));
+    const body = (pinned.length ? heading('置顶') + pinned.map(row).join('') : '') +
+      (rest.length ? grouped(rest, row) : (pinned.length ? '' : '<p class="empty">没有找到会话。</p>'));
+    scroller.innerHTML = '<div class="history-heading"><span>会话历史</span><button class="icon-button" data-action="select-chats" aria-label="多选">' + glyph('multiselect') + '</button></div>' + body;
+  }
+  scroller.scrollTop = scrollTop;
+  syncSelectActions();
+}
+
+function syncSelectActions() {
+  const enabled = selectedChats.size > 0;
+  document.querySelectorAll('#select-actions [data-select-action]').forEach(button => { button.disabled = !enabled; });
+}
+
+function enterSelectMode() {
+  selecting = true;
+  selectedChats.clear();
+  $('#history-search').value = '';
+  renderHistory();
+  $('#history').scrollTop = 0;
+}
+
+function exitSelectMode() {
+  selecting = false;
+  selectedChats.clear();
+  renderHistory();
+}
+
+function toggleSelectChat(id) {
+  if (!selecting) return;
+  if (selectedChats.has(id)) selectedChats.delete(id);
+  else selectedChats.add(id);
+  renderHistory();
+}
+
+function pinSelectedChats() {
+  if (!selectedChats.size) return;
+  const ids = [...selectedChats];
+  ids.forEach(id => { if (!state.pinned.includes(id)) state.pinned.unshift(id); });
+  persist();
+  exitSelectMode();
+  notify('已置顶 ' + ids.length + ' 个会话');
+}
+
+function deleteSelectedChats() {
+  if (!selectedChats.size) return;
+  const ids = [...selectedChats];
+  const previousActive = state.activeChat;
+  const backups = [];
+  ids.forEach(id => {
+    const index = state.chats.findIndex(chat => chat.id === id);
+    const isSample = sampleChats.some(item => item.id === id);
+    const chat = index >= 0 ? state.chats[index] : sampleChats.find(item => item.id === id);
+    if (!chat) return;
+    backups.push({ id, chat, index, sample: isSample, pinned: state.pinned.includes(id) });
+    if (index >= 0) state.chats.splice(index, 1);
+    if (isSample && !state.deleted.includes(id)) state.deleted.push(id);
+  });
+  state.pinned = state.pinned.filter(id => !ids.includes(id));
+  if (ids.includes(state.activeChat)) state.activeChat = '';
+  persist();
+  exitSelectMode();
+  renderChat();
+  notify('已删除 ' + backups.length + ' 个会话', { label: '撤销', run: () => {
+    backups.forEach(backup => {
+      if (backup.index >= 0) state.chats.splice(Math.min(backup.index, state.chats.length), 0, backup.chat);
+      state.deleted = state.deleted.filter(id => id !== backup.id);
+      if (backup.pinned && !state.pinned.includes(backup.id)) state.pinned.push(backup.id);
+    });
+    if (ids.includes(previousActive)) state.activeChat = previousActive;
+    persist();
+    renderChat();
+    renderHistory();
+  } });
 }
 
 function setGreeting() {
   const hour = new Date().getHours();
-  const [face,text] = hour < 6 || hour >= 22 ? ['←_←','还不睡觉'] :
-    hour < 11 ? ['｡･ω･｡','早呀，今天慢慢开始'] :
-    hour < 17 ? ['´▽｀','来啦，想聊点什么'] : ['˘ω˘','今天过得怎么样'];
+  const [face,text] = hour < 6 || hour >= 23 ? ['←_←','还不睡觉'] :
+    hour < 8 ? ['↑_↑','醒这么早'] :
+    hour < 11 ? ['→_→','上午好'] :
+    hour < 13 ? ['←_←','吃点什么'] :
+    hour < 17 ? ['↓_↓','有点困'] :
+    hour < 19 ? ['→_→','天快黑了'] : ['↑_↑','晚上好'];
   $('#face').textContent = face;
   $('#greeting').textContent = text;
 }
@@ -662,7 +1053,7 @@ function renderChat(scroll = false) {
   $('#welcome').hidden = messages.length > 0;
   const region = $('#messages');
   region.hidden = !messages.length;
-  region.innerHTML = messages.map(message => {
+  let html = messages.filter(message => !(message.streaming && !message.text)).map(message => {
     const favorite = state.favorites.some(item => item.key === 'chat:' + message.id);
     const copy = toolButton('copy','复制',glyph('copy'));
     const more = toolButton('more','消息操作','⋮');
@@ -670,43 +1061,291 @@ function renderChat(scroll = false) {
     const tools = message.role === 'user'
       ? time + copy + toolButton('edit','编辑',glyph('pen')) + more
       : copy + toolButton('retry','重新生成',glyph('refresh')) + toolButton('favorite',favorite ? '取消收藏' : '收藏',favorite ? '★' : '☆') + more + time;
-    return '<article class="message ' + message.role + '" data-message-id="' + esc(message.id) + '"><p class="bubble">' + esc(message.text) +
-      '</p><div class="message-tools">' + tools + '</div></article>';
-  }).join('') + (pendingReply?.chatId === chat?.id && pendingReply ? '<p class="thinking">正在思考…</p>' : '');
+    const think = message.role !== 'user' && message.thinkMs && !message.streaming
+      ? '<button class="think-toggle" data-thought="' + esc(message.id) + '">想了想 ' + message.thinkMs + ' 秒 · 展开</button>'
+      : '';
+    const queued = message.queued ? '<small class="queue-tag">排队中</small>' : '';
+    const checked = chatSelecting && selectedMessages.has(message.id);
+    return '<article class="message ' + message.role + (chatSelecting ? ' selecting' : '') + (checked ? ' selected' : '') + '" data-message-id="' + esc(message.id) + '"' +
+      (chatSelecting ? ' role="checkbox" aria-checked="' + checked + '" tabindex="0"' : '') + '>' +
+      (chatSelecting ? '<span class="message-check" aria-hidden="true"></span>' : '') + think +
+      '<p class="bubble">' + esc(message.text) + '</p>' + queued +
+      '<div class="message-tools">' + tools + '</div></article>';
+  }).join('');
+  if (generation && generation.chatId === chat?.id) {
+    if (generation.phase === 'thinking') html += '<p class="thinking">正在思考<span class="dots"><i></i><i></i><i></i></span></p>';
+    if (generation.phase === 'reasoning') html += '<p class="reasoning" id="live-reasoning">' + esc(generation.reasoning) + '</p>';
+  }
+  region.innerHTML = html;
   if (scroll) region.scrollTop = region.scrollHeight;
   syncComposer();
+}
+
+function updateContextMeter() {
+  const chat = currentChat();
+  const chars = (chat?.messages || []).reduce((sum, message) => sum + (message.text?.length || 0), 0);
+  const pct = Math.min(99, Math.round(chars / 80));
+  const meter = $('#context-meter');
+  if (!meter) return;
+  meter.textContent = pct + '%';
+  meter.dataset.level = pct >= 90 ? 'high' : pct >= 70 ? 'warn' : '';
 }
 
 function syncComposer() {
   const input = $('#chat-input');
   input.style.height = 'auto';
   input.style.height = Math.min(input.scrollHeight, 135) + 'px';
-  const busy = pendingReply && pendingReply.chatId === state.activeChat;
-  $('#send-message').hidden = busy || !input.value.trim();
-  $('#stop-message').hidden = !busy;
-  $('#model-label').textContent = (state.model === 'pro' ? 'DS-pro' : 'DS-flash') + '  ' + (state.think ? state.effort : 'low');
+  const busy = generation && generation.chatId === state.activeChat;
+  const has = Boolean(input.value.trim());
+  $('#send-message').hidden = Boolean(busy && !has);
+  $('#send-message').disabled = !has;
+  $('#send-message').classList.toggle('active', has);
+  $('#stop-message').hidden = !(busy && !has);
+  $('#model-label').innerHTML = (state.model === 'pro' ? 'DS-pro' : 'DS-flash') + '&nbsp; <b>' + (state.think ? state.effort : 'low') + '</b>';
+  updateContextMeter();
 }
 
-function startReply(chat, replaceId = '') {
-  if (pendingReply) clearTimeout(pendingReply.timer);
-  const model = state.model === 'pro' ? 'DS-pro' : 'DS-flash';
-  pendingReply = { chatId: chat.id, timer: setTimeout(() => {
-    const message = { id: uid(), role: 'bot', time: timeNow(),
-      text: '我在听。你想再说一点，还是先把这一刻记下来？\n\n（' + model + ' · 原型示例回复）' };
-    const index = replaceId ? chat.messages.findIndex(item => item.id === replaceId) : -1;
-    if (index >= 0) chat.messages[index] = message;
-    else chat.messages.push(message);
-    pendingReply = null;
+function renderChatKeepingScroll() {
+  const region = $('#messages');
+  const top = region.scrollTop;
+  renderChat();
+  region.scrollTop = top;
+}
+function syncMessageSelectActions() {
+  const count = selectedMessages.size;
+  const total = currentChat()?.messages.length || 0;
+  $('#chat-select-count').textContent = '已选 ' + count + ' 条';
+  $('#chat-select-bar .select-all').textContent = count > 0 && count === total ? '取消全选' : '全选';
+  document.querySelectorAll('#chat-select-actions button').forEach(button => { button.disabled = count === 0; });
+}
+function enterMessageSelect() {
+  const chat = currentChat();
+  if (!chat || !chat.messages.length) { notify('这个会话还没有消息'); return; }
+  chatSelecting = true;
+  selectedMessages.clear();
+  $('#chat').classList.add('selecting');
+  $('#chat-select-bar').hidden = false;
+  $('#chat-select-actions').hidden = false;
+  renderChatKeepingScroll();
+  syncMessageSelectActions();
+}
+function resetMessageSelect() {
+  chatSelecting = false;
+  selectedMessages.clear();
+  $('#chat').classList.remove('selecting');
+  $('#chat-select-bar').hidden = true;
+  $('#chat-select-actions').hidden = true;
+}
+function exitMessageSelect() {
+  resetMessageSelect();
+  renderChatKeepingScroll();
+}
+function toggleMessageSelection(id) {
+  if (!chatSelecting) return;
+  if (selectedMessages.has(id)) selectedMessages.delete(id);
+  else selectedMessages.add(id);
+  const article = document.querySelector('[data-message-id="' + CSS.escape(id) + '"]');
+  if (article) {
+    const checked = selectedMessages.has(id);
+    article.classList.toggle('selected', checked);
+    article.setAttribute('aria-checked', String(checked));
+  }
+  syncMessageSelectActions();
+}
+function toggleSelectAllMessages() {
+  const ids = (currentChat()?.messages || []).map(message => message.id);
+  if (selectedMessages.size === ids.length) selectedMessages.clear();
+  else ids.forEach(id => selectedMessages.add(id));
+  renderChatKeepingScroll();
+  syncMessageSelectActions();
+}
+function selectedMessagesInOrder() {
+  const chat = currentChat();
+  if (!chat) return [];
+  return chat.messages.filter(message => selectedMessages.has(message.id));
+}
+function deleteSelectedMessages() {
+  if (!selectedMessages.size) return;
+  const chat = editableChat();
+  const ids = new Set(selectedMessages);
+  const backups = chat.messages.map((message, index) => ({ message, index })).filter(item => ids.has(item.message.id));
+  if (!backups.length) return;
+  if (!confirm('删除选中的 ' + backups.length + ' 条消息？')) return;
+  chat.messages = chat.messages.filter(message => !ids.has(message.id));
+  persist();
+  resetMessageSelect();
+  renderChatKeepingScroll();
+  notify('已删除 ' + backups.length + ' 条消息', { label: '撤销', run: () => {
+    [...backups].sort((a, b) => a.index - b.index).forEach(({ message, index }) => {
+      chat.messages.splice(Math.min(index, chat.messages.length), 0, message);
+    });
     persist();
-    if (state.activeChat === chat.id) {
+    if (state.activeChat === chat.id) renderChat();
+  } });
+}
+function openExportSheet() {
+  const count = selectedMessagesInOrder().length;
+  if (!count) return;
+  openSheet('导出', '<p class="caption">已选 ' + count + ' 条消息。</p><div class="stack">' +
+    '<button class="setting-row config-row" data-action="export-messages-photo">' + glyph('image') + '图片<span class="caption">长图</span></button>' +
+    '<button class="setting-row config-row" data-action="export-messages-doc">' + glyph('doc') + '文档<span class="caption">文字</span></button>' +
+    '</div>');
+}
+function exportSelection(kind) {
+  const count = selectedMessagesInOrder().length;
+  if (!count) return;
+  const photo = kind === 'photo';
+  openSheet(photo ? '导出为图片' : '导出为文档', '<p class="caption">已选 ' + count + ' 条消息。</p><p class="reading">' +
+    (photo
+      ? '原型先留入口：之后会把它们排成一张长图，存进相册或直接分享。'
+      : '原型先留入口：之后会导成一份文档，保留说话的人和时间。') +
+    '</p><div class="dialog-actions"><button class="primary" type="button" data-action="close-dialog">知道了</button></div>');
+}
+function exportSelectedPhoto() { exportSelection('photo'); }
+function exportSelectedDoc() { exportSelection('doc'); }
+
+const replyBank = [
+  { r:'她把这句话说出来了。先接住，不急着分析，也不要马上给建议。可以顺着她刚才说的，问一个具体一点的小问题。',
+    t:'我听见了。\n\n你愿意再多说一点吗？不着急，想到哪儿说到哪儿。' },
+  { r:'今天她好像有点累，但没有直接说。先不追问，陪她把这一段慢慢放下来。',
+    t:'嗯，我在。\n\n不用急着把今天讲清楚，先歇一会儿也可以。' },
+  { r:'她提到的事有两件：一件是当下在做的，一件是心里放着的。先回应当下，再把后面那件轻轻记下来。',
+    t:'那就先从眼前这件小事开始吧。\n\n剩下的，等你想说的时候再说，我都留着耳朵。' },
+  { r:'这句话里有一点没说出口的情绪。不要替她命名，只把位置留出来，让她自己决定要不要往下讲。',
+    t:'我在这里。\n\n如果想说，就说；不想说，坐一会儿也很好。' }
+];
+
+function replyFor(text) {
+  return replyBank[(text.length + Math.floor(Date.now() / 1000)) % replyBank.length];
+}
+
+function schedule(fn, ms) {
+  const id = setTimeout(() => {
+    generation?.timers.delete(id);
+    fn();
+  }, ms);
+  generation?.timers.add(id);
+  return id;
+}
+
+function startReply(chat, replaceId = '', afterId = '') {
+  if (generation) return;
+  const lastUser = [...chat.messages].reverse().find(message => message.role === 'user');
+  const reply = replyFor(lastUser?.text || '');
+  const message = { id: uid(), role: 'bot', time: timeNow(), text: '', reasoning: '', thinkMs: 0, streaming: true };
+  const replaceIndex = replaceId ? chat.messages.findIndex(item => item.id === replaceId) : -1;
+  if (replaceIndex >= 0) chat.messages[replaceIndex] = message;
+  else if (afterId) {
+    const index = chat.messages.findIndex(item => item.id === afterId);
+    chat.messages.splice(index >= 0 ? index + 1 : chat.messages.length, 0, message);
+  } else chat.messages.push(message);
+  generation = { chatId: chat.id, messageId: message.id, phase: 'thinking', reasoning: '', timers: new Set(), startedAt: Date.now(), timer: 0 };
+  if (state.activeChat === chat.id) renderChat(true); else syncComposer();
+  schedule(() => {
+    if (!generation || generation.stop) return;
+    if (state.think) beginReasoning(chat, message, reply);
+    else beginBody(chat, message, reply);
+  }, state.think ? 900 : 550);
+}
+
+function beginReasoning(chat, message, reply) {
+  if (!generation || generation.stop) return;
+  generation.phase = 'reasoning';
+  let index = 0;
+  const tick = () => {
+    if (!generation || generation.stop) return;
+    index = Math.min(reply.r.length, index + 2);
+    generation.reasoning = reply.r.slice(0, index);
+    const live = $('#live-reasoning');
+    if (live) {
+      live.textContent = generation.reasoning;
       const region = $('#messages');
-      renderChat(region.scrollHeight - region.clientHeight - region.scrollTop < 70);
+      if (region.scrollHeight - region.clientHeight - region.scrollTop < 80) region.scrollTop = region.scrollHeight;
+    } else if (state.activeChat === chat.id) renderChat(true);
+    if (index >= reply.r.length) {
+      message.thinkMs = Math.max(1, Math.round((Date.now() - generation.startedAt) / 1000));
+      schedule(() => beginBody(chat, message, reply), 260);
+      return;
     }
-  }, 700) };
-  renderChat(!replaceId);
+    generation.timer = schedule(tick, 38);
+  };
+  if (state.activeChat === chat.id) renderChat(true);
+  tick();
+}
+
+function beginBody(chat, message, reply) {
+  if (!generation || generation.stop) return;
+  generation.phase = 'body';
+  message.reasoning = generation.reasoning || '';
+  message.thinkMs = message.thinkMs || 0;
+  if (state.activeChat === chat.id) renderChat(true);
+  let index = 0;
+  const full = reply.t;
+  const tick = () => {
+    if (!generation || generation.stop) return;
+    const step = Math.max(1, Math.round(full.length / 70));
+    index = Math.min(full.length, index + step);
+    message.text = full.slice(0, index);
+    const bubble = document.querySelector('[data-message-id="' + message.id + '"] .bubble');
+    if (bubble) bubble.textContent = message.text;
+    const region = $('#messages');
+    if (region.scrollHeight - region.clientHeight - region.scrollTop < 80) region.scrollTop = region.scrollHeight;
+    if (index >= full.length) { finishGeneration(chat, false); return; }
+    generation.timer = schedule(tick, 26);
+  };
+  tick();
+}
+
+function finishGeneration(chat, stopped = false) {
+  if (!generation) return;
+  const gen = generation;
+  clearTimeout(gen.timer);
+  gen.timers.forEach(clearTimeout);
+  generation = null;
+  const target = chat || allChats().find(item => item.id === gen.chatId);
+  const message = target?.messages.find(item => item.id === gen.messageId);
+  if (target && message) {
+    message.streaming = false;
+    message.thinkMs = message.thinkMs || Math.max(1, Math.round((Date.now() - gen.startedAt) / 1000));
+    if (!message.text) target.messages.splice(target.messages.indexOf(message), 1);
+    else if (!message.reasoning) message.thinkMs = 0;
+    persist();
+  }
+  if (target && state.activeChat === target.id) renderChat();
+  else syncComposer();
+  processQueues();
+}
+
+function processQueues() {
+  if (generation) return;
+  for (const chat of allChats()) {
+    const next = chat.messages.find(message => message.queued);
+    if (!next) continue;
+    next.queued = false;
+    persist();
+    startReply(chat, '', next.id);
+    return;
+  }
+}
+
+function stopGeneration() {
+  if (!generation || generation.chatId !== state.activeChat) return;
+  finishGeneration(currentChat(), true);
+}
+
+function sendMessage(chat, text) {
+  chat.title ||= text.slice(0, 22);
+  chat.date = today;
+  const message = { id: uid(), role: 'user', text, time: timeNow() };
+  chat.messages.push(message);
+  if (generation) message.queued = true;
+  persist();
+  renderChat(true);
+  if (!generation) startReply(chat);
 }
 
 function newChat() {
+  resetMessageSelect();
   state.activeChat = '';
   $('#chat-input').value = '';
   setGreeting();
@@ -741,7 +1380,7 @@ function closeMenu(restore = false) {
   menuAnchor = null;
 }
 
-const pageTitles = { diary: '我们的', memory: '我们的', favorites: '我们的', notes: '小本本', plan: '小本本', settings: '设置' };
+const pageTitles = { diary: '我们的', memory: '我们的', favorites: '我们的', notes: '小本本', plan: '小本本', settings: '设置', connection: '电脑连接' };
 const ourPages = ['diary','memory','favorites'];
 const notePages = ['notes','plan'];
 
@@ -761,7 +1400,7 @@ function renderPage(page) {
     return;
   }
   $('#page-title').textContent = page === 'single' ? authorNames[selectedAuthor] + '的日记' : pageTitles[page];
-  const renderers = { diary: renderDiary, single: renderSingle, memory: renderMemory, favorites: renderFavorites, notes: renderNotes, plan: renderPlan, settings: renderSettings };
+  const renderers = { diary: renderDiary, single: renderSingle, memory: renderMemory, favorites: renderFavorites, notes: renderNotes, plan: renderPlan, settings: renderSettings, connection: renderConnection };
   body.innerHTML = renderers[page]();
   if (page === 'diary') mountDiaryRuler();
 }
@@ -770,6 +1409,7 @@ const scrollPositions = new Map();
 function navigate(page, push = true) {
   scrollPositions.set(currentPage, scrollY);
   closeMenu();
+  if (page !== 'chat') resetMessageSelect();
   const sidebarWasOpen = !$('#sidebar').hidden;
   renderPage(page);
   toggleSidebar(false, false);
@@ -938,24 +1578,51 @@ function refreshContent() {
   else renderPage(currentPage);
   updateUnread();
 }
+function readingMarkup(entry) {
+  const liked = state.favorites.some(item => item.key === 'diary:' + entry.id);
+  const star = '<svg class="icon' + (liked ? ' star-on' : '') + '" viewBox="0 0 24 24" aria-hidden="true">' + icons.star + '</svg>';
+  return '<span class="reading-tag">' + esc(authorNames[entry.author]) + '</span>' +
+    '<button class="icon-button reading-close" data-action="close-dialog" aria-label="关闭">' + glyph('close') + '</button>' +
+    '<div class="reading-sheet"><header class="reading-head"><h2 id="reading-title">' + esc(entry.title) + '</h2>' +
+    '<p class="reading-meta">' + esc(readableDate(entry.date)) + '</p></header>' +
+    '<div class="reading-text" tabindex="0">' + esc(entry.body) + '</div>' +
+    '<footer class="reading-actions">' +
+    '<button data-edit-entry="' + esc(entry.id) + '" aria-label="编辑">' + glyph('pencil') + '</button>' +
+    '<button data-favorite-entry="' + esc(entry.id) + '" aria-label="' + (liked ? '取消收藏' : '收藏') + '">' + star + '</button>' +
+    '<button data-delete-entry="' + esc(entry.id) + '" aria-label="删除">' + glyph('trash') + '</button>' +
+    '</footer></div>';
+}
+function openReading(entry) {
+  const dialog = $('#reading');
+  dialog.innerHTML = readingMarkup(entry);
+  if (!dialog.open) dialog.showModal();
+}
 function readEntry(entry) {
   if (entry.unread) {
     entry.unread = false;
     save();
     refreshContent();
   }
-  const liked = state.favorites.some(item => item.key === 'diary:' + entry.id);
-  openSheet(entry.title, '<p class="caption">' + esc(authorNames[entry.author]) + ' · ' + esc(readableDate(entry.date)) +
-    '</p><p class="reading">' + esc(entry.body) + '</p><div class="dialog-actions"><button class="text-button" data-favorite-entry="' + esc(entry.id) + '">' +
-    (liked ? '★ 取消收藏' : '☆ 收藏') + '</button></div>');
+  openReading(entry);
 }
-function writeEntry(message) {
+function writeEntry(message, entry = null) {
   if (message !== undefined) diaryDraft = { date: today, title: '', body: message };
-  const draft = diaryDraft || { date: today, title: '', body: '' };
-  openSheet('写日记', '<form id="entry-form"><label>日期<input class="field" name="date" type="date" value="' + esc(draft.date) + '" max="' + today + '" required></label>' +
+  const draft = entry || diaryDraft || { date: today, title: '', body: '' };
+  openSheet(entry ? '编辑日记' : '写日记', '<form id="entry-form"' + (entry ? ' data-id="' + esc(entry.id) + '"' : '') + '><label>日期<input class="field" name="date" type="date" value="' + esc(draft.date) + '" max="' + today + '" required></label>' +
     '<label>标题<input class="field" name="title" value="' + esc(draft.title) + '" maxlength="40" required></label>' +
     '<label>正文<textarea class="field" name="body" maxlength="6000" required>' + esc(draft.body) + '</textarea></label>' +
     '<div class="dialog-actions"><button class="primary" type="submit">保存</button></div></form>');
+}
+function deleteEntry(entry) {
+  if (!confirm('删除这篇日记？')) return;
+  const index = entries.findIndex(item => item.id === entry.id);
+  if (index >= 0) entries.splice(index, 1);
+  save();
+  $('#sheet').close();
+  $('#reading').close();
+  renderPage(currentPage === 'single' ? 'single' : 'diary');
+  updateUnread();
+  notify('日记已删除');
 }
 function toggleFavorite(item) {
   const existing = state.favorites.findIndex(favorite => favorite.key === item.key);
@@ -967,14 +1634,59 @@ function toggleFavorite(item) {
 }
 function renderFavorites() {
   if (!state.favorites.length) return '<p class="empty">还没有收藏。可以从聊天或日记中收藏内容。</p>';
-  return state.favorites.map(item => '<span class="caption right">' + (item.key.startsWith('diary:') ? '日记' : '对话') + '　' +
-    esc(item.date) + '</span><button class="paper-card favorite-card" data-open-favorite="' + esc(item.key) + '">' + esc(item.title || item.text.slice(0,140)) + '</button>').join('');
+  return state.favorites.map(item => {
+    const diary = item.key.startsWith('diary:');
+    const date = String(item.date || '').replaceAll('-', '.');
+    return '<div class="favorite-item"><span class="favorite-meta">' + (diary ? '日记' : '对话') + '　' + esc(date) + (item.time ? '　' + esc(item.time) : '') + '</span>' +
+      '<button class="favorite-card ' + (diary ? 'diary' : 'conversation') + '" data-open-favorite="' + esc(item.key) + '">' +
+      (item.title ? '<span class="favorite-title">' + esc(item.title) + '</span>' : '') +
+      '<span class="favorite-body">' + esc(item.text || '') + '</span></button></div>';
+  }).join('');
+}
+function findFavoriteMessage(item) {
+  const messageId = item.key.slice(5);
+  const chats = allChats();
+  const preferred = item.chatId ? chats.find(chat => chat.id === item.chatId) : null;
+  if (preferred) {
+    const message = preferred.messages.find(entry => entry.id === messageId);
+    if (message) return { chat: preferred, message };
+  }
+  for (const chat of chats) {
+    const message = chat.messages.find(entry => entry.id === messageId);
+    if (message) return { chat, message };
+  }
+  return null;
+}
+function jumpToMessage(chatId, messageId) {
+  const target = ensureChat(chatId) || allChats().find(chat => chat.id === chatId);
+  if (!target || !target.messages.some(entry => entry.id === messageId)) {
+    notify('原对话已经不在了，这句话还留在这里。');
+    return;
+  }
+  state.activeChat = target.id;
+  persist();
+  $('#sheet').close();
+  navigate('chat');
+  requestAnimationFrame(() => {
+    const node = document.querySelector('[data-message-id="' + CSS.escape(messageId) + '"]');
+    if (!node) return;
+    node.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    node.classList.add('highlight');
+    setTimeout(() => node.classList.remove('highlight'), 1800);
+  });
 }
 function readFavorite(key) {
   const item = state.favorites.find(favorite => favorite.key === key);
   if (!item) return;
+  const isChat = key.startsWith('chat:');
+  const found = isChat ? findFavoriteMessage(item) : null;
+  const jump = isChat
+    ? (found
+      ? '<button class="primary" data-jump-chat="' + esc(found.chat.id) + '" data-jump-message="' + esc(found.message.id) + '">回到原对话</button>'
+      : '<span class="caption">原对话已不在了</span>')
+    : '';
   openSheet(item.title || '收藏的对话', '<p class="reading">' + esc(item.text) +
-    '</p><div class="dialog-actions"><button class="text-button" data-remove-favorite="' + esc(key) + '">取消收藏</button></div>');
+    '</p><div class="dialog-actions">' + jump + '<button class="text-button" data-remove-favorite="' + esc(key) + '">取消收藏</button></div>');
 }
 function renderMemory() {
   const row = (name,label) => '<label class="setting-row">' + label + '<input class="toggle" type="checkbox" data-pref="' + name + '"' + (state[name] ? ' checked' : '') + '></label>';
@@ -991,17 +1703,75 @@ function editMemory(id = '') {
     '<button class="primary" type="submit">保存</button></div></form>');
 }
 function renderNotes() {
-  const periods = [['今日',4,45], ['本周',2,50], ['长期',2,55]];
-  return periods.map(([label,lines,height]) => '<div class="panel-heading"><h2>' + label +
-    '</h2></div><div class="rule-paper" aria-hidden="true" style="--line-height:' + height + 'px">' +
-    '<span></span>'.repeat(lines) + '</div>').join('');
+  const periods = [['today','今日',45,4], ['week','本周',50,3], ['long','长期',55,4]];
+  return periods.map(([period,label,height,lines]) => {
+    const memos = state.memos.filter(memo => memo.period === period);
+    const rows = memos.map(memo =>
+      '<div class="memo-row' + (memo.done ? ' done' : '') + '" data-memo-row="' + esc(memo.id) + '">' +
+      '<button class="memo-check" data-memo-toggle="' + esc(memo.id) + '" aria-pressed="' + memo.done + '" aria-label="' + (memo.done ? '标记为未完成' : '标记为完成') + '"></button>' +
+      '<button class="memo-text" data-edit-memo="' + esc(memo.id) + '">' + esc(memo.text) + '</button>' +
+      '<button class="memo-del" data-memo-delete="' + esc(memo.id) + '" aria-label="删除这条备忘">×</button></div>').join('');
+    return '<div class="panel-heading"><h2>' + label + '</h2><button class="icon-button memo-add" data-add-memo="' + period + '" aria-label="添加' + label + '备忘">+</button></div>' +
+      '<div class="memo-paper" style="--line-height:' + height + 'px">' + rows +
+      '<span class="memo-filler"></span>'.repeat(Math.max(0, lines - memos.length)) + '</div>';
+  }).join('');
+}
+function writeMemo(period, memo = null) {
+  const labels = { today: '今日', week: '本周', long: '长期' };
+  openSheet(memo ? '编辑备忘' : '添加备忘', '<form id="memo-form" data-period="' + esc(period) + '"' + (memo ? ' data-id="' + esc(memo.id) + '"' : '') +
+    '><p class="caption">' + esc(labels[period] || '') + '</p><label>内容<textarea class="field" name="body" maxlength="200" required>' + esc(memo?.text || '') +
+    '</textarea></label><div class="dialog-actions"><button class="primary" type="submit">保存</button></div></form>');
+}
+function deleteMemo(id) {
+  const memo = state.memos.find(item => item.id === id);
+  if (!memo || !confirm('删除这条备忘？')) return;
+  state.memos = state.memos.filter(item => item.id !== id);
+  persist();
+  const y = scrollY;
+  renderPage('notes');
+  scrollTo(0, y);
+  notify('备忘已删除');
+}
+const mealPlan = {
+  breakfast: ['燕麦粥 + 水煮蛋', '一小把蓝莓'],
+  lunch: ['食堂 · 番茄牛腩饭', '一杯温豆浆'],
+  dinner: ['等她回来，一起做意面', '清炒时蔬 · 半碗米饭']
+};
+const weekPlan = [
+  ['周一','散步 30 分钟'], ['周二','休息'], ['周三','拉伸 15 分钟'], ['周四','散步 40 分钟'],
+  ['周五','休息'], ['周六','骑车 1 小时'], ['周日','散步 20 分钟']
+];
+function renderExercise() {
+  const now = dateObject(today);
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const total = new Date(year, month + 1, 0).getDate();
+  const offset = (new Date(year, month, 1).getDay() + 6) % 7;
+  const minutes = [30, 20, 40, 30, 30, 25, 45, 30, 20, 50, 30, 35];
+  const days = [2, 4, 7, 9, 12, 15, 17, 19, 22, 24, 27, 29].filter(day => day <= total);
+  const log = new Map(days.map((day, index) => [day, minutes[index % minutes.length]]));
+  if (!log.has(now.getDate())) log.set(now.getDate(), 30);
+  const sum = [...log.values()].reduce((a, b) => a + b, 0);
+  const level = value => value >= 45 ? ' high' : value >= 30 ? ' mid' : '';
+  const cells = '<span></span>'.repeat(offset) + Array.from({ length: total }, (_, index) => {
+    const day = index + 1;
+    const active = log.has(day);
+    return '<span class="exercise-day' + (active ? ' active' + level(log.get(day)) : '') + (day === now.getDate() ? ' today' : '') + '">' + day + '</span>';
+  }).join('');
+  const totalText = sum >= 60 ? Math.floor(sum / 60) + ' 小时' + (sum % 60 ? ' ' + sum % 60 + ' 分' : '') : sum + ' 分钟';
+  return '<div class="exercise"><div class="exercise-head"><strong>' + (month + 1) + '月运动</strong><span>' + log.size + ' 天 · ' + totalText + '</span></div>' +
+    '<div class="exercise-week" aria-hidden="true">' + ['一','二','三','四','五','六','日'].map(day => '<span>' + day + '</span>').join('') + '</div>' +
+    '<div class="exercise-grid">' + cells + '</div>' +
+    '<p class="exercise-foot">今天 · ' + (log.has(now.getDate()) ? '散步 ' + log.get(now.getDate()) + ' 分钟' : '还没记录，晚饭后走一走？') + '</p></div>';
 }
 function renderPlan() {
-  return '<div class="panel-heading"><h2>今日饮食</h2><span class="caption">查看计划 ›</span></div><div class="meals">' +
-    ['早','中','晚'].map(label => '<div class="meal"><strong>' + label + '</strong><div class="meal-body"></div></div>').join('') +
-    '</div><div class="panel-heading"><h2>运动日历</h2></div><div class="exercise"></div>';
+  const meals = [['早', mealPlan.breakfast], ['中', mealPlan.lunch], ['晚', mealPlan.dinner]];
+  return '<div class="panel-heading"><h2>今日饮食</h2><span class="caption">今天</span></div><div class="meals">' +
+    meals.map(([label, items]) => '<div class="meal"><strong>' + label + '</strong><div class="meal-body"><ul class="meal-list">' +
+      items.map(item => '<li>' + esc(item) + '</li>').join('') + '</ul></div></div>').join('') +
+    '</div><div class="panel-heading"><h2>运动日历</h2><button class="text-button plan-detail" data-action="plan-detail">本周计划 ›</button></div>' + renderExercise();
 }
-const themes = { sand: ['#dcc49f','#fcfaec','#f2e9d3','#e9a45d'], green: ['#d8dfa6','#fafbed','#ebefd8','#84914a'], blue: ['#b5dae2','#f2f9fa','#e3eff1','#6893a2'] };
+const themes = { sand: ['#DFC7A2','#FFFDEF','rgba(223,199,162,.22)','#E9A866'], green: ['#d8dfa6','#fafbed','#ebefd8','#84914a'], blue: ['#b5dae2','#f2f9fa','#e3eff1','#6893a2'] };
 const fonts = { default: 'var(--serif)', serif: '"Songti SC","Noto Serif CJK SC",serif', round: '"Yuanti SC","PingFang SC","Microsoft YaHei",sans-serif' };
 function applySettings() {
   const [sand,paper,wash,accent] = themes[state.theme] || themes.sand;
@@ -1010,16 +1780,46 @@ function applySettings() {
     root.style.setProperty('--' + name, value);
   }
   if ($('#font-value')) $('#font-value').textContent = state.fontSize + '%';
+  if ($('#font-range')) $('#font-range').style.setProperty('--fill', state.fontSize + '%');
 }
 function renderSettings() {
   const pressed = (pref,value) => ' aria-pressed="' + (state[pref] === value) + '"';
-  return '<p class="caption">通用</p><div class="stack"><details open><summary class="setting-row">◔　主题色</summary><div class="swatches">' +
+  return '<p class="caption group">通用</p><div class="stack"><details open><summary class="setting-row">' + glyph('moon') + '主题色</summary><div class="swatches">' +
     Object.entries(themes).map(([id,[color]], index) => '<button class="swatch" data-theme="' + id + '" style="--swatch:' + color + '" aria-label="' + ['暖米色','浅绿色','浅蓝色'][index] + '"' + pressed('theme',id) + '></button>').join('') +
-    '</div></details><details open><summary class="setting-row">Tᴛ　字体</summary><div class="font-options">' +
+    '</div></details><details open><summary class="setting-row"><span class="setting-type">Tᴛ</span>字体</summary><div class="font-options">' +
     Object.keys(fonts).map((id,index) => '<button data-font="' + id + '"' + pressed('font',id) + '>' + ['默认','衬线体','圆体'][index] + '</button>').join('') +
     '</div><div class="slider-row"><input type="range" min="0" max="100" step="10" value="' + state.fontSize + '" id="font-range" aria-label="字号"><output id="font-value" for="font-range">' + state.fontSize +
     '%</output></div><p class="font-sample">和你在一起，不和你在一起，这便是我时间的尺度。</p></details></div>' +
-    '<div class="panel-heading"><h2>配置</h2></div><div class="stack"><button class="setting-row config-row" data-action="models">◉　模型</button><button class="setting-row config-row" data-action="connection">▣　电脑连接</button></div>';
+    '<p class="caption group">配置</p><div class="stack">' +
+    '<button class="setting-row config-row" data-action="models">' + glyph('dot') + '模型</button>' +
+    '<button class="setting-row config-row" data-action="connection">' + glyph('computer') + '电脑连接</button>' +
+    '<button class="setting-row config-row" data-action="tools">' + glyph('wrench') + '工具管理</button>' +
+    '<button class="setting-row config-row" data-action="plugins">' + glyph('plugin') + '插件</button>' +
+    '<button class="setting-row config-row" data-action="permissions">' + glyph('shield') + '权限</button></div>' +
+    '<p class="caption group">数据</p><div class="stack">' +
+    '<button class="setting-row config-row" data-action="backup">' + glyph('download') + '备份与导出</button>' +
+    '<button class="setting-row config-row" data-action="cache">' + glyph('archive') + '清理缓存</button>' +
+    '<button class="setting-row config-row" data-action="logs">' + glyph('list') + '日志</button>' +
+    '<button class="setting-row config-row" data-action="reset">' + glyph('refresh') + '重置演示数据</button></div>';
+}
+
+function renderConnection() {
+  if (!state.computer) {
+    return '<div class="stack"><div class="setting-row">我的电脑<span class="connection-state offline">离线</span></div></div>' +
+      '<p class="caption">电脑关机或网络断开时，小家自动回到纯本地模式。聊天、日记、记忆都不受影响。</p>' +
+      '<button class="primary disconnect" data-action="connect">重新连接</button>';
+  }
+  return '<div class="stack"><div class="setting-row">我的电脑<span class="connection-state">在线</span></div>' +
+    '<div class="setting-row">连接方式<span class="caption">Cloudflare Tunnel</span></div>' +
+    '<div class="setting-row">已在线<span class="caption">1 小时 24 分</span></div></div>' +
+    '<div class="panel-heading"><h2>这台电脑能做什么</h2></div><div class="stack">' +
+    '<label class="setting-row">读写文件<input class="toggle" type="checkbox" checked></label>' +
+    '<label class="setting-row">运行命令<input class="toggle" type="checkbox"></label>' +
+    '<label class="setting-row">查看屏幕<input class="toggle" type="checkbox"></label></div>' +
+    '<div class="panel-heading"><h2>历史操作</h2></div><div class="stack">' +
+    '<div class="setting-row">读取 项目/小家/进度.md<span class="caption">今天 13:02</span></div>' +
+    '<div class="setting-row">运行 git status<span class="caption">昨天 23:41</span></div></div>' +
+    '<button class="primary disconnect" data-action="disconnect">断开连接</button>';
 }
 function renderCalendar() {
   const year = calendarMonth.getFullYear();
@@ -1071,6 +1871,20 @@ async function copyText(text) {
   } catch { openSheet('复制文本', '<textarea class="field" readonly aria-label="可复制的文本">' + esc(text) + '</textarea>'); }
 }
 
+function deleteMessage(item) {
+  const chat = item?.chat;
+  const message = item?.message;
+  if (!chat || !message) return;
+  const target = ensureChat(chat.id) || chat;
+  const index = target.messages.findIndex(entry => entry.id === message.id);
+  if (index < 0) return;
+  if (target.messages[index].role === 'user' && target.messages[index + 1]?.role === 'bot') target.messages.splice(index, 2);
+  else target.messages.splice(index, 1);
+  persist();
+  if (state.activeChat === target.id) renderChat(); else syncComposer();
+  notify('已删除');
+}
+
 function messageAction(action, item) {
   const message = item?.message;
   if (!message) return;
@@ -1079,39 +1893,145 @@ function messageAction(action, item) {
     openSheet('选择文本','<textarea class="field" readonly aria-label="聊天文本">' + esc(message.text) + '</textarea>');
     $('#sheet-body textarea').select();
   }
-  if (action === 'favorite') toggleFavorite({ key: 'chat:' + message.id, text: message.text, date: item.chat.date });
+  if (action === 'favorite') toggleFavorite({ key: 'chat:' + message.id, text: message.text, date: item.chat.date, time: message.time, chatId: item.chat.id });
   if (action === 'message-diary') writeEntry(message.text);
   if (action === 'edit') {
     openSheet('编辑消息', '<form id="edit-chat" data-message="' + esc(message.id) + '"><label>消息<textarea class="field" name="body" maxlength="3000" required>' +
       esc(message.text) + '</textarea></label><div class="dialog-actions"><button class="primary" type="submit">保存</button></div></form>');
   }
-  if (action === 'retry') startReply(editableChat(), message.id);
+  if (action === 'delete-message') deleteMessage(item);
+  if (action === 'multi-select') { enterMessageSelect(); return; }
+  if (action === 'retry') {
+    if (generation) { notify('还在回复中'); return; }
+    startReply(editableChat(), message.id);
+  }
+}
+
+function renameChat(id) {
+  const chat = allChats().find(item => item.id === id);
+  if (!chat) return;
+  openSheet('重命名会话', '<form id="rename-chat" data-id="' + esc(id) + '"><label>会话名<input class="field" name="title" value="' + esc(chat.title) + '" maxlength="30" required></label><div class="dialog-actions"><button class="primary" type="submit">保存</button></div></form>');
+}
+
+function togglePin(id) {
+  const index = state.pinned.indexOf(id);
+  if (index >= 0) state.pinned.splice(index, 1);
+  else state.pinned.unshift(id);
+  persist();
+  renderHistory();
+  notify(index >= 0 ? '已取消置顶' : '已置顶');
+}
+
+function deleteChat(id) {
+  const chat = allChats().find(item => item.id === id);
+  if (!chat) return;
+  const saved = state.chats.findIndex(item => item.id === id);
+  const isSample = sampleChats.some(item => item.id === id);
+  const wasActive = state.activeChat === id;
+  if (saved >= 0) state.chats.splice(saved, 1);
+  if (isSample && !state.deleted.includes(id)) state.deleted.push(id);
+  state.pinned = state.pinned.filter(item => item !== id);
+  persist();
+  if (wasActive) newChat(); else renderHistory();
+  notify('会话已删除', { label: '撤销', run: () => {
+    if (saved >= 0) state.chats.splice(Math.min(saved, state.chats.length), 0, chat);
+    state.deleted = state.deleted.filter(item => item !== id);
+    persist();
+    if (wasActive) { state.activeChat = id; navigate('chat'); }
+    renderHistory();
+  } });
+}
+
+function prefToggle(kind, key, label) {
+  const store = kind === 'tool' ? state.tools : state.perms;
+  return '<label class="setting-row">' + label + '<input class="toggle" type="checkbox" data-' + kind + '="' + key + '"' + (store[key] ? ' checked' : '') + '></label>';
+}
+
+function showTools() {
+  openSheet('工具管理', '<p class="caption">每个工具都能单独关掉，关掉后小D就不能再调用它。</p><div class="stack">' +
+    prefToggle('tool','memo','备忘录') + prefToggle('tool','diary','日记') + prefToggle('tool','calendar','日历') +
+    prefToggle('tool','notify','通知读取') + prefToggle('tool','files','文件') + prefToggle('tool','web','网页读取') + '</div>');
+}
+
+function showPermissions() {
+  openSheet('手机权限', '<p class="caption">这些是手机系统层面的权限，和小D能用的工具分开。</p><div class="stack">' +
+    prefToggle('perm','notifications','通知读取') + prefToggle('perm','usage','应用使用统计') +
+    prefToggle('perm','photos','相册') + prefToggle('perm','camera','相机') +
+    prefToggle('perm','calendar','日历') + prefToggle('perm','battery','电量与充电') +
+    prefToggle('perm','location','位置') + prefToggle('perm','mail','邮箱') + '</div>');
+}
+
+function syncComputerIcon() {
+  const button = $('#computer-status');
+  if (!button) return;
+  button.hidden = !state.computer;
+  button.setAttribute('aria-label', state.computer ? '电脑在线，查看连接' : '电脑离线');
 }
 
 const menuActions = {
-  'copy': '复制', 'select-text': '选择文本', 'favorite': '收藏', 'retry': '重新生成', 'edit': '编辑', 'message-diary': '收入日记', 'multi-select': '多选'
+  'copy': '复制', 'select-text': '选择文本', 'favorite': '收藏', 'retry': '重新生成', 'edit': '编辑', 'message-diary': '收入日记', 'multi-select': '多选', 'delete-message': '删除'
 };
 const commands = {
   'open-sidebar': () => toggleSidebar(true),
   'new-chat': newChat,
-  'back': () => navigate(currentPage === 'single' ? singleReturn : 'chat'),
+  'select-chats': enterSelectMode,
+  'exit-select': exitSelectMode,
+  'back': () => {
+    const target = currentPage === 'single' ? singleReturn : 'chat';
+    navigate(target);
+    if (target === 'chat' && drawerReturn) {
+      drawerReturn = false;
+      toggleSidebar(true, false);
+    }
+  },
   'close-dialog': button => button.closest('dialog').close(),
   'write-entry': () => writeEntry(),
+  'plan-detail': () => openSheet('本周运动计划', '<div class="stack">' + weekPlan.map(([day, text]) =>
+    '<div class="setting-row">' + day + '<span class="caption">' + text + '</span></div>').join('') +
+    '</div><p class="caption">计划还是示例数据，之后可以按周编辑。</p>'),
   'models': models,
   'add-memory': () => editMemory(),
-  'connection': () => openSheet('电脑连接','<p class="caption">当前未连接电脑。此原型使用本地示例数据。</p>'),
-  'stop': () => {
-    if (pendingReply?.chatId !== state.activeChat) return;
-    clearTimeout(pendingReply.timer);
-    pendingReply = null;
-    renderChat();
-  },
+  'connection': () => navigate('connection'),
+  'stop': stopGeneration,
+  'exit-chat-select': exitMessageSelect,
+  'select-all-messages': toggleSelectAllMessages,
+  'delete-selected-messages': deleteSelectedMessages,
+  'open-export': openExportSheet,
+  'export-messages-photo': exportSelectedPhoto,
+  'export-messages-doc': exportSelectedDoc,
   'open-calendar': () => {
     renderCalendar();
     $('#calendar').showModal();
   },
   'calendar-prev': () => moveCalendar(-1),
-  'calendar-next': () => moveCalendar(1)
+  'calendar-next': () => moveCalendar(1),
+  'calendar-view': () => {
+    if (!entries.some(entry => entry.date === selectedDate)) { notify('这天还没有日记'); return; }
+    $('#calendar').close();
+    rulerDate = selectedDate;
+    if (currentPage !== 'diary') navigate('diary');
+    setTimeout(() => document.querySelector('.entry[data-date="' + selectedDate + '"]')?.scrollIntoView({ block: 'center' }), 60);
+  },
+  'attach': () => openSheet('添加图片', '<p class="caption">原型先留入口。接上相机和相册以后，可以发截图、照片，也能让小D看图。</p>'),
+  'rename-chat': () => renameChat(menuChatId),
+  'pin-chat': () => togglePin(menuChatId),
+  'unpin-chat': () => togglePin(menuChatId),
+  'delete-chat': () => deleteChat(menuChatId),
+  'tools': showTools,
+  'plugins': () => openSheet('插件', '<p class="caption">先留空。之后可以放网页读取、翻译这类扩展。</p>'),
+  'permissions': showPermissions,
+  'backup': () => openSheet('备份与导出', '<p class="caption">把会话、日记、记忆和设置打成一个文件导出。M4 做。</p>'),
+  'cache': () => openSheet('清理缓存', '<div class="stack"><div class="setting-row">文字与草稿<span class="caption">2.1 MB</span></div><div class="setting-row">图片<span class="caption">18.4 MB</span></div><div class="setting-row">文件<span class="caption">0 MB</span></div></div><div class="dialog-actions"><button class="primary" data-action="clear-cache">清理</button></div>'),
+  'clear-cache': () => { $('#sheet').close(); notify('缓存已清理'); },
+  'logs': () => openSheet('日志', '<p class="reading">13:04 启动 · 本地模式\n13:05 载入 3 段示例会话\n13:12 模型切换为 DS-flash\n13:12 上下文占用 12%</p>'),
+  'reset': () => {
+    if (!confirm('清空原型数据，恢复示例？')) return;
+    localStorage.removeItem(prototypeKey);
+    localStorage.removeItem(storageKey);
+    location.reload();
+  },
+  'disconnect': () => { state.computer = false; persist(); syncComputerIcon(); renderPage('connection'); notify('已断开电脑'); },
+  'connect': () => { state.computer = true; persist(); syncComputerIcon(); renderPage('connection'); notify('电脑已连接'); }
 };
 
 function moveCalendar(step) {
@@ -1121,20 +2041,66 @@ function moveCalendar(step) {
 }
 
 document.addEventListener('click', event => {
+  const toastButton = event.target.closest('[data-toast-action]');
+  if (toastButton) {
+    const toast = $('#toast');
+    const run = toast._action;
+    toast.hidden = true;
+    toast.innerHTML = '';
+    toast._action = null;
+    run?.();
+    return;
+  }
+  if (longPressFired) {
+    longPressFired = false;
+    if (event.target.closest('#messages')) return;
+  }
+  if (chatSelecting) {
+    const article = event.target.closest('#messages [data-message-id]');
+    if (article) {
+      toggleMessageSelection(article.dataset.messageId);
+      return;
+    }
+  }
   const button = event.target.closest('button');
   if (!button) {
     if (!event.target.closest('#menu')) closeMenu();
     return;
   }
   const data = button.dataset;
+  if (data.thought) {
+    closeMenu();
+    const chat = currentChat();
+    const message = chat?.messages.find(item => item.id === data.thought);
+    if (message?.reasoning) openSheet('思考过程', '<p class="reading">' + esc(message.reasoning) + '</p>');
+    return;
+  }
+  if (data.chatMenu) {
+    closeMenu();
+    menuChatId = data.chatMenu;
+    const pinned = state.pinned.includes(menuChatId);
+    showMenu(button, [['rename-chat','重命名'], [pinned ? 'unpin-chat' : 'pin-chat', pinned ? '取消置顶' : '置顶'], ['delete-chat','删除']]);
+    return;
+  }
+  if (data.selectAction) {
+    closeMenu();
+    if (data.selectAction === 'pin') pinSelectedChats();
+    else if (data.selectAction === 'delete') deleteSelectedChats();
+    return;
+  }
+  if (data.selectChat) {
+    closeMenu();
+    toggleSelectChat(data.selectChat);
+    return;
+  }
   if (data.messageAction) {
     const chat = currentChat();
     const id = button.closest('[data-message-id]').dataset.messageId;
     const message = chat.messages.find(item => item.id === id);
     activeMessage = { chat, message };
     if (data.messageAction === 'more') {
-      const actions = message.role === 'bot' ? ['copy','select-text','favorite','retry','multi-select','message-diary'] : ['copy','select-text','favorite','edit','multi-select','message-diary'];
-      showMenu(button, actions.map(action => [action,menuActions[action],action === 'multi-select']));
+      const actions = message.role === 'bot' ? ['copy','select-text','favorite','retry','message-diary','delete-message','multi-select'] : ['copy','select-text','favorite','edit','message-diary','delete-message','multi-select'];
+      showMenu(button, actions.map(action => [action, menuActions[action]]));
     } else {
       closeMenu();
       messageAction(data.messageAction, activeMessage);
@@ -1146,16 +2112,27 @@ document.addEventListener('click', event => {
   if (data.action) {
     if (fromMenu && Object.hasOwn(menuActions,data.action)) messageAction(data.action, activeMessage);
     else commands[data.action]?.(button);
-  } else if (data.go) navigate(data.go);
-  else if (data.chat) {
+  } else if (data.go) {
+    if (button.closest('#sidebar')) drawerReturn = true;
+    navigate(data.go);
+  } else if (data.chat) {
+    resetMessageSelect();
     state.activeChat = data.chat;
     $('#chat-input').value = '';
+    drawerReturn = false;
     persist();
-    navigate('chat');
-    renderChat(true);
+    if (currentPage !== 'chat') renderPage('chat'); else renderChat(true);
+    renderHistory();
+    syncComposer();
   } else if (data.readEntry) {
     const entry = entries.find(item => item.id === data.readEntry);
     if (entry) readEntry(entry);
+  } else if (data.editEntry) {
+    const entry = entries.find(item => item.id === data.editEntry);
+    if (entry) writeEntry(undefined, entry);
+  } else if (data.deleteEntry) {
+    const entry = entries.find(item => item.id === data.deleteEntry);
+    if (entry) deleteEntry(entry);
   } else if (data.author) {
     selectedAuthor = data.author;
     singleReturn = currentPage;
@@ -1169,7 +2146,8 @@ document.addEventListener('click', event => {
     if (!entry) return;
     toggleFavorite({ key: 'diary:' + entry.id, title: entry.title, text: entry.body, date: entry.date });
     readEntry(entry);
-  } else if (data.openFavorite) readFavorite(data.openFavorite);
+  } else if (data.jumpChat) jumpToMessage(data.jumpChat, data.jumpMessage);
+  else if (data.openFavorite) readFavorite(data.openFavorite);
   else if (data.removeFavorite) {
     const item = state.favorites.find(favorite => favorite.key === data.removeFavorite);
     if (item) toggleFavorite(item);
@@ -1181,7 +2159,20 @@ document.addEventListener('click', event => {
     persist();
     renderPage('memory');
     $('#sheet').close();
-  } else if (data.model || data.effort || data.font || data.theme) {
+  } else if (data.memoToggle) {
+    const memo = state.memos.find(item => item.id === data.memoToggle);
+    if (!memo) return;
+    memo.done = !memo.done;
+    persist();
+    button.closest('.memo-row')?.classList.toggle('done', memo.done);
+    button.setAttribute('aria-pressed', String(memo.done));
+    button.setAttribute('aria-label', memo.done ? '标记为未完成' : '标记为完成');
+  } else if (data.editMemo) {
+    const memo = state.memos.find(item => item.id === data.editMemo);
+    if (memo) writeMemo(memo.period, memo);
+  } else if (data.memoDelete) deleteMemo(data.memoDelete);
+  else if (data.addMemo) writeMemo(data.addMemo);
+  else if (data.model || data.effort || data.font || data.theme) {
     const pref = ['model','effort','font','theme'].find(name => data[name]);
     state[pref] = data[pref];
     persist();
@@ -1205,14 +2196,19 @@ document.addEventListener('submit', event => {
   if (form.id === 'composer') {
     const input = $('#chat-input');
     const text = input.value.trim();
-    if (!text || pendingReply?.chatId === state.activeChat) return;
+    if (!text) return;
     const chat = editableChat();
-    chat.title ||= text.slice(0, 22);
-    chat.date = localDate(new Date());
-    chat.messages.push({ id: uid(), role: 'user', text, time: timeNow() });
     input.value = '';
-    persist();
-    startReply(chat);
+    sendMessage(chat, text);
+    syncComposer();
+    return;
+  }
+  if (form.id === 'rename-chat') {
+    const title = String(new FormData(form).get('title') || '').trim();
+    if (!title) return;
+    const chat = ensureChat(form.dataset.id);
+    if (chat) { chat.title = title; persist(); renderHistory(); }
+    $('#sheet').close();
     return;
   }
   const fields = new FormData(form);
@@ -1225,14 +2221,17 @@ document.addEventListener('submit', event => {
     const title = String(fields.get('title')).trim();
     const date = String(fields.get('date'));
     if (!title || !date || date > today) return;
-    const entry = { id: uid(), author: 'me', date, title, body };
+    const existing = entries.find(item => item.id === form.dataset.id);
+    const entry = existing || { id: uid(), author: 'me', date, title, body };
+    if (existing) { existing.date = date; existing.title = title; existing.body = body; }
+    else entries.push(entry);
     rulerDate = date;
     diaryDraft = null;
-    entries.push(entry);
     const savedEntry = save();
     $('#sheet').close();
     if (currentPage !== 'diary') navigate('diary');
     else renderPage('diary');
+    if ($('#reading').open) openReading(entry);
     updateUnread();
     document.querySelector('[data-entry-id="' + CSS.escape(entry.id) + '"]')?.scrollIntoView({block:'center'});
     notify(savedEntry ? '日记已保存' : '浏览器无法保存，日记暂留在当前页面。');
@@ -1246,10 +2245,25 @@ document.addEventListener('submit', event => {
   } else if (form.id === 'edit-chat') {
     const chat = editableChat();
     const message = chat.messages.find(item => item.id === form.dataset.message);
-    if (message) message.text = body;
+    if (message) {
+      const index = chat.messages.indexOf(message);
+      message.text = body;
+      message.queued = false;
+      chat.messages.splice(index + 1);
+      persist();
+      $('#sheet').close();
+      renderChat();
+      if (!generation) startReply(chat);
+    }
+  } else if (form.id === 'memo-form') {
+    const item = state.memos.find(memo => memo.id === form.dataset.id);
+    if (item) item.text = body;
+    else state.memos.push({ id: uid(), period: form.dataset.period, text: body, done: false });
     persist();
     $('#sheet').close();
-    renderChat();
+    const y = scrollY;
+    renderPage('notes');
+    scrollTo(0, y);
   }
 });
 
@@ -1262,7 +2276,65 @@ $('#chat-input').addEventListener('keydown', event => {
 });
 $('#history-search').addEventListener('input', renderHistory);
 $('#scrim').addEventListener('click', () => toggleSidebar(false));
-$('#messages').addEventListener('scroll', () => closeMenu());
+$('#reading').addEventListener('click', event => { if (event.target === event.currentTarget) $('#reading').close(); });
+function cancelLongPress() {
+  clearTimeout(pressTimer);
+  pressOrigin = null;
+}
+$('#messages').addEventListener('scroll', () => { closeMenu(); cancelLongPress(); });
+$('#messages').addEventListener('pointerdown', event => {
+  if (chatSelecting) return;
+  if (event.pointerType === 'mouse' && event.button !== 0) return;
+  const article = event.target.closest('[data-message-id]');
+  if (!article || event.target.closest('button, textarea, input')) return;
+  cancelLongPress();
+  pressOrigin = { x: event.clientX, y: event.clientY };
+  pressTimer = setTimeout(() => {
+    pressOrigin = null;
+    if (chatSelecting) return;
+    const chat = currentChat();
+    const message = chat?.messages.find(item => item.id === article.dataset.messageId);
+    if (!message) return;
+    activeMessage = { chat, message };
+    navigator.vibrate?.(8);
+    longPressFired = true;
+    setTimeout(() => { longPressFired = false; }, 700);
+    const actions = message.role === 'bot'
+      ? ['copy','select-text','favorite','retry','message-diary','delete-message','multi-select']
+      : ['copy','select-text','favorite','edit','message-diary','delete-message','multi-select'];
+    showMenu(article, actions.map(action => [action, menuActions[action]]));
+  }, 520);
+});
+$('#messages').addEventListener('pointermove', event => {
+  if (!pressOrigin) return;
+  if (Math.hypot(event.clientX - pressOrigin.x, event.clientY - pressOrigin.y) > 8) cancelLongPress();
+});
+['pointerup', 'pointercancel'].forEach(type => $('#messages').addEventListener(type, cancelLongPress));
+$('#history').addEventListener('contextmenu', event => {
+  const row = event.target.closest('[data-chat]');
+  if (!row) return;
+  event.preventDefault();
+  menuChatId = row.dataset.chat;
+  const pinned = state.pinned.includes(menuChatId);
+  showMenu(row, [['rename-chat','重命名'], [pinned ? 'unpin-chat' : 'pin-chat', pinned ? '取消置顶' : '置顶'], ['delete-chat','删除']]);
+});
+$('#messages').addEventListener('contextmenu', event => {
+  cancelLongPress();
+  const article = event.target.closest('[data-message-id]');
+  if (!article) return;
+  event.preventDefault();
+  if (chatSelecting) return;
+  const chat = currentChat();
+  const message = chat?.messages.find(item => item.id === article.dataset.messageId);
+  if (!message) return;
+  activeMessage = { chat, message };
+  longPressFired = true;
+  setTimeout(() => { longPressFired = false; }, 700);
+  const actions = message.role === 'bot'
+    ? ['copy','select-text','favorite','retry','message-diary','delete-message','multi-select']
+    : ['copy','select-text','favorite','edit','message-diary','delete-message','multi-select'];
+  showMenu(article.querySelector('.message-tools') || article, actions.map(action => [action, menuActions[action]]));
+});
 document.addEventListener('input', event => {
   if (event.target.form?.id === 'entry-form') {
     const { date, title, body } = event.target.form.elements;
@@ -1275,6 +2347,9 @@ document.addEventListener('input', event => {
   }
 });
 document.addEventListener('change', event => {
+  const { tool, perm } = event.target.dataset;
+  if (tool) { state.tools[tool] = event.target.checked; persist(); return; }
+  if (perm) { state.perms[perm] = event.target.checked; persist(); return; }
   const name = event.target.dataset.pref;
   if (!name) return;
   state[name] = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
@@ -1285,10 +2360,17 @@ document.addEventListener('change', event => {
   }
 });
 document.addEventListener('keydown', event => {
+  if (chatSelecting && (event.key === ' ' || event.key === 'Enter')) {
+    const article = event.target.closest('[data-message-id]');
+    if (article) { event.preventDefault(); toggleMessageSelection(article.dataset.messageId); return; }
+  }
+  if (event.key === 'Escape' && chatSelecting) { event.preventDefault(); exitMessageSelect(); return; }
   if (event.key === 'Escape' && !$('#menu').hidden) closeMenu(true);
-  else if (event.key === 'Escape' && !$('#sidebar').hidden) toggleSidebar(false);
+  else if (event.key === 'Escape' && !$('#sidebar').hidden) {
+    if (selecting) exitSelectMode(); else toggleSidebar(false);
+  }
   if (event.key !== 'Tab' || $('#sidebar').hidden) return;
-  const controls = [...$('#sidebar').querySelectorAll('button,input')];
+  const controls = [...$('#sidebar').querySelectorAll('button,input')].filter(element => element.getClientRects().length);
   if (event.shiftKey && document.activeElement === controls[0]) {
     event.preventDefault();
     controls.at(-1).focus();
@@ -1305,6 +2387,7 @@ window.addEventListener('hashchange', () => {
 setGreeting();
 applySettings();
 updateUnread();
+syncComputerIcon();
 route();
 
 </script>

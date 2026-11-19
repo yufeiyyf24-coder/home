@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>卷卷 · 手机预览</title>
+<title>小家 · 手机预览</title>
 <style>
 * { box-sizing: border-box }
 body { margin: 0; background: #e9e6df; color: #39342c; font: 13px -apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif }
@@ -18,9 +18,9 @@ main { min-height: 100dvh; display: grid; grid-template-columns: minmax(0,1fr); 
   overflow: hidden;
   outline: 2px solid #504a42;
   box-shadow: 0 8px 30px #42392c30;
-  background: #fcfaec;
+  background: #FFFDEF;
 }
-iframe { display: block; width: 100%; height: 100%; border: 0; background: #fcfaec }
+iframe { display: block; width: 100%; height: 100%; border: 0; background: #FFFDEF }
 .status { display: flex; align-items: center; padding: 0 18px; font-weight: 650 }
 .indicators { margin-left: auto; display: flex; align-items: center; gap: 7px }
 .signal { display: flex; align-items: end; gap: 2px }
@@ -61,7 +61,7 @@ window.addEventListener('resize', fitPhone);
         <span class="wifi"></span><span class="battery"></span>
       </span>
     </div>
-    <iframe id="prototype" title="卷卷原型"></iframe>
+    <iframe id="prototype" title="小家原型"></iframe>
     <div class="gestures" aria-hidden="true"></div>
   </div>
 </main>
@@ -80,7 +80,7 @@ const prototype = document.querySelector('#prototype');
 const phone = document.querySelector('.phone');
 function loadPrototype() {
   phone.classList.remove('drawer-open','secondary-page');
-  prototype.src = 'index.html?phone=1' + location.hash;
+  prototype.src = 'index.html?phone=1&t=' + Date.now() + location.hash;
 }
 window.addEventListener('message', event => {
   if (event.source !== prototype.contentWindow) return;
